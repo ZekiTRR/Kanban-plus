@@ -2,24 +2,24 @@
 
 [Русский](./README.md) · **English**
 
-Kanban Plus is a fork of [Obsidian Kanban](https://github.com/mgmeyers/obsidian-kanban) with ideas from Trello, Plaky, Planka and Notion. Boards stay plain markdown files and still open in the original plugin.
+Kanban Plus is a fork of [Obsidian Kanban](https://github.com/mgmeyers/obsidian-kanban). Boards stay plain markdown files and still open in the original plugin.
 
 ![Kanban Plus board](docs/images/board.svg)
 
 ## Features
 
-- **🎨 Colored lanes & cards.** Header/body tint for lanes, strip or full background for cards, palette and custom color. Stored in the `%% kanban:settings` block.
-- **🖼 Backgrounds, text and fonts.** Board, lane and card backgrounds: color, gradient, an image from the vault, a URL or a local file. Text color and font per board, lane or card; the default font lives in plugin settings.
-- **🏷 Trello-style labels.** A colored bar above the card expands to the label name on click and collapses on the next click. Existing tags and tag colors are kept.
-- **🏷 Tags & filters.** Colored tags, quick filter bar (tags, “Overdue”, “Today”, “Next 7 days”) and a tags submenu on cards.
-- **📌 Free-floating lanes.** Drag a lane out of the row and leave it anywhere on the board. The magnet button or a click on its background smoothly snaps it back.
-- **📥 Inbox, Trello-style.** A dedicated Inbox list for quick capture: toolbar button, ribbon action or `Ctrl/Cmd + Alt + I`, a card-count badge and one-click triage.
-- **🗓 Deadlines & periods.** Not just a due date, but a “from → to” range with semantic badge colors.
-- **📅 Calendar planner.** Month and week views, drag & drop cards between days, an “Unscheduled” panel, and drag-select to create a period.
-- **✅ Checklists.** A `☑ 2/5` progress counter with a bar right on the card.
-- **🗂 Trello-style card window.** Clicking a card opens a window with description, checklist, per-item comments and a comment/event feed, with a smooth appearance animation.
-- **✨ Animations.** Card hover lift, drag physics, FLIP transitions for lanes, respects `prefers-reduced-motion`.
-- **🔍 Board zoom.** `Ctrl + wheel` / `Cmd + wheel`, two-finger pinch, and `− / % / +` controls (40–200%).
+- **Colored lanes & cards.** Header/body tint for lanes, strip or full background for cards, palette and custom color. Stored in the `%% kanban:settings` block.
+- **Backgrounds, text and fonts.** Board, lane and card backgrounds: color, gradient, an image from the vault, a URL or a local file. Text color and font per board, lane or card; the default font lives in plugin settings.
+- **Labels.** A colored bar above the card expands to the label name on click and collapses on the next click. Existing tags and tag colors are kept.
+- **Tags & filters.** Colored tags, quick filter bar (tags, “Overdue”, “Today”, “Next 7 days”) and a tags submenu on cards.
+- **Free-floating lanes.** Drag a lane out of the row and leave it anywhere on the board. The magnet button or a click on its background smoothly snaps it back.
+- **Inbox.** A dedicated Inbox list for quick capture: toolbar button, ribbon action or `Ctrl/Cmd + Alt + I`, a card-count badge and one-click triage.
+- **Deadlines & periods.** Not just a due date, but a “from → to” range with semantic badge colors.
+- **Calendar planner.** Month and week views, drag & drop cards between days, an “Unscheduled” panel, and drag-select to create a period.
+- **Checklists.** A `2/5` progress counter with a bar right on the card.
+- **Card window.** Clicking a card opens a window with description, checklist, per-item comments and a comment/event feed, with a smooth appearance animation.
+- **Animations.** Card hover lift, drag physics, FLIP transitions for lanes, respects `prefers-reduced-motion`.
+- **Board zoom.** `Ctrl + wheel` / `Cmd + wheel`, two-finger pinch, and `− / % / +` controls (40–200%).
 
 ## Installation
 
@@ -43,12 +43,12 @@ Kanban Plus is a fork of [Obsidian Kanban](https://github.com/mgmeyers/obsidian-
 
 ## Card window
 
-Clicking a card opens a Trello-like window (links inside the card still work as links):
+Clicking a card opens a detail window (links inside the card still work as links):
 
 - change the list (status);
 - description;
 - checklist with per-item comments;
-- comments and events, with a “Show details” toggle;
+- comments and events;
 - quick actions: “Add”, “Labels”, “Dates”, “Checklist”;
 - the “Labels” panel lets you assign existing labels, create new ones and change their colors right there.
 
@@ -62,7 +62,7 @@ Open a card’s menu and choose **“Set period”**, then pick the start and en
 - red — overdue;
 - green — the card is done.
 
-The period is stored in markdown as `🛫 YYYY-MM-DD … 📅 YYYY-MM-DD`, so files stay compatible with Tasks and the original Kanban.
+The period is stored in markdown as Tasks emoji dates (start and due date in `YYYY-MM-DD` format), so files stay compatible with Tasks and the original Kanban.
 
 ![Card period](docs/images/period.svg)
 
@@ -89,7 +89,7 @@ Switch the board view to **calendar** (view menu or the “View as calendar” c
 
 - The `kanban-plugin` key and card syntax are unchanged.
 - New settings live in `%% kanban:settings`; the original plugin simply ignores them.
-- Tasks emoji dates (`🛫`, `📅`, `✅`) are parsed without the Tasks plugin.
+- Tasks emoji dates are parsed without the Tasks plugin.
 
 ## Development
 
