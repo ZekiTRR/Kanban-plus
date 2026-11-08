@@ -113,31 +113,6 @@ export class CardDetailModal extends Modal {
     }
   }
 
-  /** Segmented Edit / Preview control shared by the description and comment composer. */
-  private createMarkdownTabs(container: HTMLElement, onMode: (mode: 'edit' | 'preview') => void) {
-    const tabs = container.createDiv(c('card-detail-md-tabs'));
-    const editBtn = tabs.createEl('button', {
-      text: t('Edit'),
-      cls: c('card-detail-md-tab'),
-    });
-    editBtn.toggleClass('is-active', true);
-    const previewBtn = tabs.createEl('button', {
-      text: t('Preview'),
-      cls: c('card-detail-md-tab'),
-    });
-
-    const setMode = (mode: 'edit' | 'preview') => {
-      editBtn.toggleClass('is-active', mode === 'edit');
-      previewBtn.toggleClass('is-active', mode === 'preview');
-      onMode(mode);
-    };
-
-    editBtn.addEventListener('click', () => setMode('edit'));
-    previewBtn.addEventListener('click', () => setMode('preview'));
-
-    return tabs;
-  }
-
   onOpen() {
     this.modalEl.addClass(c('card-detail-modal'));
     this.mdComponent = new Component();
@@ -424,29 +399,28 @@ export class CardDetailModal extends Modal {
     setIcon(icon, 'lucide-align-left');
     titleWrap.createEl('h3', { text: t('Description') });
 
-    const textarea = section.createEl('textarea', { cls: c('card-detail-description') });
+    const split = section.createDiv(c('card-detail-md-split'));
+
+    const textarea = split.createEl('textarea', { cls: c('card-detail-description') });
     textarea.value = description;
     textarea.placeholder = t('Add a more detailed description...');
-    textarea.rows = 5;
+    textarea.rows = 6;
 
-    const previewEl = section.createDiv(c('card-detail-md-preview'));
-    previewEl.style.display = 'none';
-
+    const previewEl = split.createDiv(c('card-detail-md-preview'));
     const updatePreview = () => this.renderMarkdownInto(previewEl, textarea.value);
-    textarea.addEventListener('input', updatePreview);
+    updatePreview();
 
-    this.createMarkdownTabs(section, (mode) => {
-      const isPreview = mode === 'preview';
-      textarea.style.display = isPreview ? 'none' : '';
-      previewEl.style.display = isPreview ? '' : 'none';
-
-      if (isPreview) updatePreview();
+    let previewTimer = 0;
+    textarea.addEventListener('input', () => {
+      this.view.getWindow().clearTimeout(previewTimer);
+      previewTimer = this.view.getWindow().setTimeout(updatePreview, 200);
     });
 
     const actions = section.createDiv(c('card-detail-actions'));
     const save = actions.createEl('button', { text: t('Save') });
 
     save.addEventListener('click', () => {
+      this.view.getWindow().clearTimeout(previewTimer);
       const parts = parseCardParts(item.data.titleRaw);
       parts.description = textarea.value;
       this.writeParts(item, path, parts);
@@ -611,17 +585,13 @@ export class CardDetailModal extends Modal {
     });
 
     const previewEl = section.createDiv(c('card-detail-md-preview'));
-    previewEl.style.display = 'none';
-
     const updatePreview = () => this.renderMarkdownInto(previewEl, input.value);
-    input.addEventListener('input', updatePreview);
+    updatePreview();
 
-    this.createMarkdownTabs(section, (mode) => {
-      const isPreview = mode === 'preview';
-      input.style.display = isPreview ? 'none' : '';
-      previewEl.style.display = isPreview ? '' : 'none';
-
-      if (isPreview) updatePreview();
+    let previewTimer = 0;
+    input.addEventListener('input', () => {
+      this.view.getWindow().clearTimeout(previewTimer);
+      previewTimer = this.view.getWindow().setTimeout(updatePreview, 200);
     });
 
     const addBtn = section.createEl('button', { text: t('Comment') });
