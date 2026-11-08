@@ -3372,6 +3372,8 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   background-color: var(--kp-raised);
   overflow: hidden;
   margin-block-end: 4px;
+  width: 100%;
+  min-width: 100%;
 
   .cm-editor {
     border: none;
@@ -3382,7 +3384,7 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   }
 
   .cm-content {
-    min-height: 110px;
+    min-height: 180px;
     padding: 10px 12px;
     font-size: 14px;
     line-height: 1.6;
@@ -3391,7 +3393,7 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
 
 .kanban-plugin__card-detail-activity .kanban-plugin__card-detail-md-editor {
   .cm-content {
-    min-height: 72px;
+    min-height: 140px;
   }
 }
 

@@ -339,6 +339,14 @@ export const ItemContent = memo(function ItemContent({
     [path, boardModifiers, stateManager, item]
   );
 
+  // Kanban Plus: the card face shows only the first line. The description
+  // (the rest of the body) lives in the detail window only.
+  const faceTitle = useMemo(() => {
+    const lines = (item.data.title || '').split('\n');
+    const first = lines.find((line) => line.trim().length > 0);
+    return first ? first.trim() : '';
+  }, [item.data.title]);
+
   if (!isStatic && isEditing(editState)) {
     return (
       <div className={c('item-input-wrapper')}>
@@ -366,7 +374,7 @@ export const ItemContent = memo(function ItemContent({
         <MarkdownClonedPreviewRenderer
           entityId={item.id}
           className={c('item-markdown')}
-          markdownString={item.data.title}
+          markdownString={faceTitle}
           searchQuery={searchQuery}
           onPointerUp={onCheckboxContainerClick}
         />
@@ -374,7 +382,7 @@ export const ItemContent = memo(function ItemContent({
         <MarkdownRenderer
           entityId={item.id}
           className={c('item-markdown')}
-          markdownString={item.data.title}
+          markdownString={faceTitle}
           searchQuery={searchQuery}
           onPointerUp={onCheckboxContainerClick}
         />

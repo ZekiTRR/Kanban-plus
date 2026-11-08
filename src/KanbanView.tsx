@@ -85,8 +85,16 @@ export class KanbanView extends TextFileView implements HoverParent {
       lane.children.forEach((item) => {
         if (this.previewCache.has(item.id)) return;
 
+        // Kanban Plus: cache the card face (first line only); the description
+        // is shown in the detail window only.
+        const faceTitle =
+          (item.data.title || '')
+            .split('\n')
+            .find((line) => line.trim().length > 0)
+            ?.trim() || '';
+
         this.previewQueue.add(async () => {
-          const preview = this.addChild(new BasicMarkdownRenderer(this, item.data.title));
+          const preview = this.addChild(new BasicMarkdownRenderer(this, faceTitle));
           this.previewCache.set(item.id, preview);
           await preview.renderCapability.promise;
         });
