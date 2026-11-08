@@ -24,6 +24,7 @@ import {
   updateEntity,
 } from './dnd/util/data';
 import { getBoardModifiers } from './helpers/boardModifiers';
+import { canInsertIntoLane } from './helpers/wipGate';
 import KanbanPlugin from './main';
 import { frontmatterKey } from './parsers/common';
 import {
@@ -57,6 +58,11 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
         const destinationParent = getEntityFromPath(stateManager.state, dropPath.slice(0, -1));
 
         try {
+          const destinationLaneIndex = dropPath[0];
+          if (!canInsertIntoLane(stateManager, stateManager.state, destinationLaneIndex, data.content.length)) {
+            return;
+          }
+
           const items: Item[] = data.content.map((title: string) => {
             let item = stateManager.getNewItem(title, ' ');
             const isComplete = !!destinationParent?.data?.shouldMarkItemsComplete;
@@ -120,6 +126,16 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
 
         if (inDropArea) {
           dropPath.push(0);
+        }
+
+        if (dragEntityData.type === DataTypes.Item) {
+          const destinationLaneIndex = dropPath[0];
+          const sourceLaneIndex = dragPath[0];
+          if (destinationLaneIndex !== sourceLaneIndex) {
+            if (!canInsertIntoLane(stateManager, stateManager.state, destinationLaneIndex, 1)) {
+              return;
+            }
+          }
         }
 
         return stateManager.setState((board) => {
@@ -203,6 +219,12 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
       const sourceStateManager = plugin.stateManagers.get(sourceView.file);
       const destinationView = plugin.getKanbanView(dropEntity.scopeId, dropEntityData.win);
       const destinationStateManager = plugin.stateManagers.get(destinationView.file);
+
+      if (dragEntityData.type === DataTypes.Item && dropPath.length) {
+        if (!canInsertIntoLane(destinationStateManager, destinationStateManager.state, dropPath[0], 1)) {
+          return;
+        }
+      }
 
       sourceStateManager.setState((sourceBoard) => {
         const entity = getEntityFromPath(sourceBoard, dragPath);

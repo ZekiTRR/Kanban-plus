@@ -21,6 +21,13 @@ import { t } from 'src/lang/helpers';
 
 import { KanbanView } from '../../KanbanView';
 import { colorPalette, getReadableTextColor, setTagColor } from '../colors';
+import { CoverModal } from '../Appearance/CoverModal';
+import { coverCss, getCardCoverFor, setCardCoverFor } from '../cover';
+import {
+  findCardByBlockId,
+  getDependencyFor,
+  removeDependency,
+} from '../timeline/dependencies';
 import { constructDatePicker, constructMenuDatePickerOnChange } from '../Item/helpers';
 import { c, escapeRegExpStr } from '../helpers';
 import { Item } from '../types';
@@ -104,6 +111,21 @@ export class CardDetailModal extends Modal {
     const titleMarkdown = getTitleMarkdown(parts.firstLine);
     const titleEl = contentEl.createDiv({ cls: c('card-detail-title') });
 
+    const cardCover = getCardCoverFor(this.stateManager, this.blockId);
+    if (cardCover) {
+      const cover = contentEl.createDiv(c('card-detail-cover'));
+      cover.setCssStyles(coverCss(this.stateManager.app, cardCover) as any);
+      cover.style.height = `${cardCover.height || 140}px`;
+      cover.style.backgroundSize = cardCover.objectFit;
+      cover.style.backgroundPosition = cardCover.objectPosition;
+      cover.addEventListener('click', () => {
+        new CoverModal(this.stateManager.app, cardCover, (next) => {
+          setCardCoverFor(this.stateManager, this.blockId, next);
+          this.render();
+        }).open();
+      });
+    }
+
     if (titleMarkdown) {
       const renderPromise = ObsidianMarkdownRenderer.render(
         this.app,
@@ -144,6 +166,12 @@ export class CardDetailModal extends Modal {
     });
     addAction('lucide-calendar', t('Dates'), (e) => this.openDatePicker(e, item, path));
     addAction('lucide-check-square', t('Checklist'), focusChecklist);
+    addAction('lucide-image', t('Card cover'), () => {
+      new CoverModal(this.stateManager.app, cardCover, (next) => {
+        setCardCoverFor(this.stateManager, this.blockId, next);
+        this.render();
+      }).open();
+    });
 
     if (this.labelsOpen) {
       this.renderLabelsPanel(contentEl, item, path);
@@ -153,9 +181,37 @@ export class CardDetailModal extends Modal {
     const mainCol = layout.createDiv(c('card-detail-main'));
     const sideCol = layout.createDiv(c('card-detail-side'));
 
+    this.renderDependencies(mainCol);
+
     this.renderDescription(mainCol, parts.description, item, path);
     this.renderChecklist(mainCol, parts.checklist, item, path);
     this.renderActivity(sideCol, meta);
+  }
+
+  private renderDependencies(container: HTMLElement) {
+    const dependency = getDependencyFor(this.stateManager, this.blockId);
+    const section = container.createDiv(c('card-detail-section'));
+    const head = section.createDiv(c('card-detail-section-head'));
+    const titleWrap = head.createDiv(c('card-detail-section-title'));
+    const icon = titleWrap.createSpan(c('card-detail-section-icon'));
+    setIcon(icon, 'lucide-link');
+    titleWrap.createEl('h3', { text: t('Dependencies') });
+
+    if (!dependency) {
+      section.createEl('p', { text: t('No dependencies'), cls: c('card-detail-empty') });
+      return;
+    }
+
+    const target = findCardByBlockId(this.stateManager.state, dependency.dependsOn);
+    const row = section.createDiv(c('card-detail-dependency'));
+    row.createSpan({
+      text: `${dependency.type}: ${target ? target.item.data.title || target.item.data.titleRaw.split('\n')[0] : dependency.dependsOn}`,
+    });
+    const remove = row.createEl('button', { text: t('Remove dependency') });
+    remove.addEventListener('click', () => {
+      removeDependency(this.stateManager, this.blockId);
+      this.render();
+    });
   }
 
   private writeParts(item: Item, path: number[], parts: ReturnType<typeof parseCardParts>) {

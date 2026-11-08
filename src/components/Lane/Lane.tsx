@@ -33,6 +33,7 @@ import { ItemForm } from '../Item/ItemForm';
 import { backgroundToCss, fontToCss } from '../appearance';
 import { KanbanContext, SearchContext, SortContext } from '../context';
 import { c, clampZoom, generateInstanceId, noop } from '../helpers';
+import { getWipState } from '../../helpers/wipLimits';
 import { laneColorToCssVars, setLanePos } from '../colors';
 import { DataTypes, EditState, EditingState, Item, Lane } from '../types';
 import { LaneHeader } from './LaneHeader';
@@ -89,6 +90,7 @@ function DraggableLaneRaw({
   );
   const laneFontStyle = useMemo(() => fontToCss(laneEntry?.font), [laneEntry?.font]);
   const laneTextColor = laneEntry?.textColor;
+  const wip = useMemo(() => getWipState(stateManager, lane), [stateManager, lane]);
   const laneStyles = useMemo(
     () =>
       !(isCollapsed && collapseDir === 'horizontal') && (fullWidth || laneWidth)
@@ -484,6 +486,9 @@ function DraggableLaneRaw({
           },
           laneBg.className,
         ])}
+        data-wip-limit={wip.limit || undefined}
+        data-wip-at-limit={wip.atLimit ? 'true' : undefined}
+        data-wip-exceeded={wip.exceeded ? 'true' : undefined}
         style={{
           ...(laneStyles || {}),
           ...laneColorVars,
@@ -497,6 +502,9 @@ function DraggableLaneRaw({
           data-count={lane.children.length}
           ref={elementRef}
           className={classcat([c('lane'), { 'will-prepend': shouldPrepend }])}
+          data-wip-limit={wip.limit || undefined}
+          data-wip-at-limit={wip.atLimit ? 'true' : undefined}
+          data-wip-exceeded={wip.exceeded ? 'true' : undefined}
         >
           <CollapsedDropArea {...dropAreaProps}>
             <LaneHeader

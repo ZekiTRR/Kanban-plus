@@ -15,6 +15,7 @@ import {
 } from 'src/dnd/util/data';
 
 import { generateInstanceId } from '../components/helpers';
+import { getWipState, wipLimitPolicy } from './wipLimits';
 import {
   laneStylesAfterAppendLane,
   laneStylesAfterDuplicateLane,
@@ -75,15 +76,54 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
 
   return {
     appendItems: (path: Path, items: Item[]) => {
-      stateManager.setState((boardData) => appendEntities(boardData, path, markJustAdded(items)));
+      stateManager.setState((boardData) => {
+        const lane = boardData.children[path[0]];
+        if (lane) {
+          const state = getWipState(stateManager, lane);
+          if (
+            state.limit &&
+            lane.children.length + items.length > state.limit &&
+            wipLimitPolicy(stateManager) === 'strict'
+          ) {
+            return boardData;
+          }
+        }
+        return appendEntities(boardData, path, markJustAdded(items));
+      });
     },
 
     prependItems: (path: Path, items: Item[]) => {
-      stateManager.setState((boardData) => prependEntities(boardData, path, markJustAdded(items)));
+      stateManager.setState((boardData) => {
+        const lane = boardData.children[path[0]];
+        if (lane) {
+          const state = getWipState(stateManager, lane);
+          if (
+            state.limit &&
+            lane.children.length + items.length > state.limit &&
+            wipLimitPolicy(stateManager) === 'strict'
+          ) {
+            return boardData;
+          }
+        }
+        return prependEntities(boardData, path, markJustAdded(items));
+      });
     },
 
     insertItems: (path: Path, items: Item[]) => {
-      stateManager.setState((boardData) => insertEntity(boardData, path, markJustAdded(items)));
+      stateManager.setState((boardData) => {
+        const lane = boardData.children[path[0]];
+        if (lane) {
+          const state = getWipState(stateManager, lane);
+          if (
+            state.limit &&
+            lane.children.length + items.length > state.limit &&
+            wipLimitPolicy(stateManager) === 'strict'
+          ) {
+            return boardData;
+          }
+        }
+        return insertEntity(boardData, path, markJustAdded(items));
+      });
     },
 
     replaceItem: (path: Path, items: Item[]) => {
@@ -107,6 +147,18 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
         const target = boardData.children[laneIndex];
         if (!target) return boardData;
 
+        const sourceLaneIndex = path[0];
+        if (sourceLaneIndex !== laneIndex) {
+          const state = getWipState(stateManager, target);
+          if (
+            state.limit &&
+            target.children.length + 1 > state.limit &&
+            wipLimitPolicy(stateManager) === 'strict'
+          ) {
+            return boardData;
+          }
+        }
+
         return moveEntity(boardData, path, [laneIndex, target.children.length]);
       });
     },
@@ -121,6 +173,15 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
         const target = boardData.children[laneIndex];
 
         if (!source || !target || !source.children.length) return boardData;
+
+        const state = getWipState(stateManager, target);
+        if (
+          state.limit &&
+          target.children.length + source.children.length > state.limit &&
+          wipLimitPolicy(stateManager) === 'strict'
+        ) {
+          return boardData;
+        }
 
         const items = source.children;
         const cleared = update(boardData, {

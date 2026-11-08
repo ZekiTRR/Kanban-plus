@@ -37,6 +37,9 @@ import type { CardMeta } from './helpers/cardMeta';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
 import { frontmatterKey } from './parsers/common';
+import { WipLimitPolicy } from './helpers/wipLimits';
+import { CardCover } from './components/cover';
+import { CardDependency, DependencyType } from './components/timeline/dependencies';
 import {
   createSearchSelect,
   defaultDateTrigger,
@@ -51,7 +54,7 @@ import { cleanUpTagSortSettings, renderTagSortSettings } from './settings/TagSor
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
-export type KanbanFormat = 'basic' | 'board' | 'table' | 'list' | 'calendar';
+export type KanbanFormat = 'basic' | 'board' | 'table' | 'list' | 'calendar' | 'timeline';
 
 export interface KanbanSettings {
   [frontmatterKey]?: KanbanFormat;
@@ -74,6 +77,20 @@ export interface KanbanSettings {
   'enable-zoom'?: boolean;
   'inbox'?: boolean;
   'inbox-title'?: string;
+  'wip-limits'?: {
+    warn?: boolean;
+    movable?: Record<string, WipLimitPolicy>;
+    enforced?: boolean;
+  };
+  'wip-warn'?: boolean;
+  'wip-enforced'?: boolean;
+  'card-covers'?: Record<string, CardCover>;
+  'dependencies'?: Record<string, CardDependency>;
+  'minimap'?: boolean;
+  'swimlanes'?: { enabled: boolean; mode: string; key?: string };
+  'timeline-scale'?: string;
+  'timeline-scroll'?: number;
+  'minimap-position'?: 'tl' | 'tr' | 'bl' | 'br';
   'full-list-lane-width'?: boolean;
   'hide-card-count'?: boolean;
   'inline-metadata-position'?: 'body' | 'footer' | 'metadata-table';
@@ -117,6 +134,13 @@ export interface KanbanViewSettings {
   [frontmatterKey]?: KanbanFormat;
   'list-collapse'?: boolean[];
   zoom?: number;
+  'swimlane-collapse'?: string[];
+  'swimlane-group'?: string;
+  'swimlane-field'?: string;
+  'timeline-zoom'?: number;
+  'timeline-scale'?: string;
+  'minimap-open'?: boolean;
+  'minimap-position'?: 'tl' | 'tr' | 'bl' | 'br';
 }
 
 export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
@@ -140,6 +164,16 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'enable-zoom',
   'inbox',
   'inbox-title',
+  'wip-limits',
+  'wip-warn',
+  'wip-enforced',
+  'card-covers',
+  'dependencies',
+  'minimap',
+  'swimlanes',
+  'timeline-scale',
+  'timeline-scroll',
+  'minimap-position',
   'full-list-lane-width',
   'hide-card-count',
   'inline-metadata-position',
@@ -1739,6 +1773,27 @@ export class SettingsManager {
       t('Enable Inbox'),
       t('Adds a dedicated Inbox list and a quick-capture dialog for new cards.'),
       true
+    );
+
+    toggleSetting(
+      'minimap',
+      t('Mini Map'),
+      t('Show a miniature of the whole board with the current viewport in a corner.'),
+      false
+    );
+
+    toggleSetting(
+      'wip-warn',
+      t('WIP warnings'),
+      t('Warn when a card is moved into a list that is already at its WIP limit.'),
+      true
+    );
+
+    toggleSetting(
+      'wip-enforced',
+      t('Enforce WIP limits'),
+      t('When toggled, cards cannot be moved into a list that is already at its WIP limit.'),
+      false
     );
 
     new Setting(contentEl)

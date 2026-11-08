@@ -16,6 +16,7 @@ import { frontmatterKey } from 'src/parsers/common';
 
 import { KanbanContext, SearchContext } from '../context';
 import { backgroundToCss, fontToCss } from '../appearance';
+import { coverCss, coverImageUrl, getCardCover, getCardCoverFor, isTestableImageUrl } from '../cover';
 import { itemColorToCssVars } from '../colors';
 import { c } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
@@ -236,6 +237,28 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
     [stateManager, itemEntry?.background]
   );
   const itemFontStyle = useMemo(() => fontToCss(itemEntry?.font), [itemEntry?.font]);
+  const cover = useMemo(
+    () => getCardCoverFor(stateManager, blockId),
+    [stateManager, blockId]
+  );
+  const coverStyle = useMemo(
+    () => (cover ? coverCss(stateManager.app, cover) : {}),
+    [stateManager, cover]
+  );
+  const [coverError, setCoverError] = useState(false);
+
+  useEffect(() => {
+    setCoverError(false);
+    if (!cover) return;
+
+    const url = coverImageUrl(stateManager.app, cover);
+    if (!url || !isTestableImageUrl(url)) return;
+
+    const img = new Image();
+    img.onload = () => setCoverError(false);
+    img.onerror = () => setCoverError(true);
+    img.src = url;
+  }, [cover, stateManager]);
 
   const isMatch = search?.query ? innerProps.item.data.titleSearch.includes(search.query) : false;
   const classModifiers: string[] = getItemClassModifiers(innerProps.item);
@@ -268,6 +291,12 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
           ...(itemEntry?.textColor ? { color: itemEntry.textColor } : {}),
         }}
       >
+        {cover && !coverError && (
+          <div
+            className={classcat([c('card-cover'), { 'is-gif': /\.gif(?:[?#]|$)/i.test(cover.value) }])}
+            style={{ height: `${cover.height || 140}px`, ...coverStyle } as any}
+          />
+        )}
         {props.isStatic ? (
           <ItemInner
             {...innerProps}

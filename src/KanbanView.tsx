@@ -22,6 +22,7 @@ import { Board } from './components/types';
 import { getParentWindow } from './dnd/util/getWindow';
 import { gotoNextDailyNote, gotoPrevDailyNote, hasFrontmatterKeyRaw } from './helpers';
 import { countInbox, getInboxTitle, isInboxEnabled } from './helpers/inbox';
+import { getSwimlaneConfig, setSwimlaneConfig, swimlaneModes } from './helpers/swimlanes';
 import { bindMarkdownEvents } from './helpers/renderMarkdown';
 import { PromiseQueue } from './helpers/util';
 import { t } from './lang/helpers';
@@ -279,6 +280,9 @@ export class KanbanView extends TextFileView implements HoverParent {
     if ((key as string) === 'zoom') {
       return ((this.viewSettings as any).zoom ?? 1) as any;
     }
+    if ((key as string) === 'timeline-zoom') {
+      return ((this.viewSettings as any)['timeline-zoom'] ?? 16) as any;
+    }
     const stateManager = this.plugin.getStateManager(this.file);
     const settingVal = (stateManager as any).getSetting(key);
     return (this.viewSettings[key] ?? settingVal) as any;
@@ -287,6 +291,9 @@ export class KanbanView extends TextFileView implements HoverParent {
   useViewState<K extends keyof KanbanViewSettings>(key: K) {
     if ((key as string) === 'zoom') {
       return ((this.viewSettings as any).zoom ?? 1) as any;
+    }
+    if ((key as string) === 'timeline-zoom') {
+      return ((this.viewSettings as any)['timeline-zoom'] ?? 16) as any;
     }
     const stateManager = this.plugin.getStateManager(this.file);
     const settingVal = (stateManager as any).useSetting(key);
@@ -382,7 +389,81 @@ export class KanbanView extends TextFileView implements HoverParent {
           .setIcon(allCollapsed ? 'lucide-chevrons-down' : 'lucide-chevrons-up')
           .onClick(() => this.toggleAllLanes(!allCollapsed))
       )
+      .addSeparator()
+      .addItem((item) =>
+        item
+          .setTitle(t('Mini Map'))
+          .setIcon('lucide-map')
+          .setChecked(!!stateManager.getSetting('minimap'))
+          .onClick(() =>
+            stateManager.setState((board) =>
+              update(board, {
+                data: {
+                  settings: { minimap: { $set: !stateManager.getSetting('minimap') } },
+                },
+              })
+            )
+          )
+      )
+      .addSeparator()
+      .addItem((item) =>
+        item
+          .setTitle(t('Swimlanes'))
+          .setIcon('lucide-rows-3')
+          .onClick(() => this.openSwimlaneMenu(evt))
+      )
       .showAtMouseEvent(evt);
+  }
+
+  private openSwimlaneMenu(evt: MouseEvent) {
+    const stateManager = this.plugin.stateManagers.get(this.file);
+
+    if (!stateManager) return;
+
+    const config = getSwimlaneConfig(stateManager);
+    const menu = new Menu()
+      .addItem((item) =>
+        item.setTitle(t('Swimlanes off')).setChecked(!config.enabled).onClick(() =>
+          setSwimlaneConfig(stateManager, { ...config, enabled: false })
+        )
+      );
+
+    swimlaneModes.forEach((group: (typeof swimlaneModes)[number]) => {
+      let submenu: Menu;
+
+      menu.addItem((item) => {
+        submenu = (item as any)
+          .setTitle(group.label)
+          .setChecked(config.enabled && config.mode === group.value)
+          .setSubmenu() as Menu;
+      });
+
+      if (group.value === 'custom') {
+        (['category', 'project', 'owner', 'source', 'type'] as string[]).forEach((key: string) => {
+          submenu.addItem((item) =>
+            item
+              .setTitle(key)
+              .setChecked(config.enabled && config.mode === 'custom' && config.key === key)
+              .onClick(() =>
+                setSwimlaneConfig(stateManager, {
+                  enabled: true,
+                  mode: 'custom',
+                  key,
+                })
+              )
+          );
+        });
+        return;
+      }
+
+      submenu.addItem((item) =>
+        item.setTitle(group.label).setChecked(config.enabled && config.mode === group.value).onClick(() =>
+          setSwimlaneConfig(stateManager, { enabled: true, mode: group.value })
+        )
+      );
+    });
+
+    menu.showAtMouseEvent(evt);
   }
 
   toggleAllLanes(collapse?: boolean) {
@@ -519,6 +600,13 @@ export class KanbanView extends TextFileView implements HoverParent {
                 .setIcon('lucide-server')
                 .setChecked(view === 'list')
                 .onClick(() => this.setView('list'))
+            )
+            .addItem((item) =>
+              item
+                .setTitle(t('Timeline view'))
+                .setIcon('lucide-gantt-chart')
+                .setChecked(view === 'timeline')
+                .onClick(() => this.setView('timeline'))
             )
             .showAtMouseEvent(evt);
         }

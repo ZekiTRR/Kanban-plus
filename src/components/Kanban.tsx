@@ -17,6 +17,9 @@ import { frontmatterKey } from '../parsers/common';
 import { backgroundToCss, fontToCss } from './appearance';
 import { CalendarView } from './Calendar/Calendar';
 import { FilterBar } from './FilterBar';
+import { SwimlanesView } from './Swimlanes/Swimlanes';
+import { TimelineView } from './timeline/Timeline';
+import { MiniMap } from './MiniMap/MiniMap';
 import { Icon } from './Icon/Icon';
 import { Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
@@ -54,6 +57,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const isAnythingDragging = useIsAnythingDragging();
 
   const rootRef = useRef<HTMLDivElement>(null);
+  const [rootEl, setRootEl] = useState<HTMLDivElement | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
@@ -369,7 +373,10 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       <KanbanContext.Provider value={kanbanContext}>
         <SearchContext.Provider value={searchValue}>
           <div
-            ref={rootRef}
+            ref={(el) => {
+              rootRef.current = el;
+              setRootEl(el);
+            }}
             className={classcat([
               baseClassName,
               {
@@ -427,6 +434,14 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
               <div className={c('view-zoom-content')} style={viewZoomStyle}>
                 <CalendarView boardData={boardData} stateManager={stateManager} />
               </div>
+            ) : boardView === 'timeline' ? (
+              <div className={c('view-zoom-content')}>
+                <TimelineView boardData={boardData} stateManager={stateManager} />
+              </div>
+            ) : stateManager.getSetting('swimlanes')?.enabled ? (
+              <div className={c('view-zoom-content')}>
+                <SwimlanesView boardData={boardData} stateManager={stateManager} />
+              </div>
             ) : (
               <ScrollContainer
                 id={view.id}
@@ -454,6 +469,16 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                 </div>
               </ScrollContainer>
             )}
+            {stateManager.getSetting('minimap') &&
+              (boardView === 'board' || boardView === 'basic' || boardView === 'list') &&
+              !stateManager.getSetting('swimlanes')?.enabled &&
+              rootEl && (
+                <MiniMap
+                  stateManager={stateManager}
+                  rootEl={rootEl}
+                  boardDataRevision={boardData}
+                />
+              )}
             {enableZoom && (
               <div className={c('zoom-controls')}>
                 <a

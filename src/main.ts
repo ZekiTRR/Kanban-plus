@@ -548,6 +548,14 @@ export default class KanbanPlugin extends Plugin {
               )
               .addItem((item) =>
                 item
+                  .setTitle(t('Timeline view'))
+                  .setSection('pane')
+                  .setIcon('lucide-gantt-chart')
+                  .setChecked(boardView === 'timeline')
+                  .onClick(() => kanbanView.setView('timeline'))
+              )
+              .addItem((item) =>
+                item
                   .setTitle(t('Open board settings'))
                   .setSection('pane')
                   .setIcon('lucide-settings')
@@ -777,6 +785,22 @@ export default class KanbanPlugin extends Plugin {
 
         if (view && view instanceof KanbanView) {
           view.setView('list');
+        }
+      },
+    });
+
+    this.addCommand({
+      id: 'view-timeline',
+      name: t('Timeline view'),
+      checkCallback: (checking) => {
+        const view = app.workspace.getActiveViewOfType(KanbanView);
+
+        if (checking) {
+          return view && view instanceof KanbanView;
+        }
+
+        if (view && view instanceof KanbanView) {
+          view.setView('timeline');
         }
       },
     });

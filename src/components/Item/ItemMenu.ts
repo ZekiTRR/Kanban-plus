@@ -13,11 +13,15 @@ import {
 import { t } from 'src/lang/helpers';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
+import { canInsertIntoLane } from '../../helpers/wipGate';
+import { findCardByBlockId, getDependencyFor, removeDependency, setDependency } from '../timeline/dependencies';
 import { BackgroundModal } from '../Appearance/BackgroundModal';
+import { CoverModal } from '../Appearance/CoverModal';
 import { FontModal } from '../Appearance/FontModal';
 import { TextColorModal } from '../Appearance/TextColorModal';
 import { CardDetailModal } from './CardDetailModal';
 import { addColorMenu, setItemAppearance, setItemColor } from '../colors';
+import { setCardCoverFor } from '../cover';
 import { KanbanContext } from '../context';
 import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
 import { EditState, Item } from '../types';
@@ -131,6 +135,31 @@ export function useItemMenu({
               const withId = ensureBlockId();
               setItemAppearance(stateManager, withId.data.blockId as string, { font });
             }).open();
+          });
+      });
+
+      menu.addItem((i) => {
+        i.setIcon('lucide-image')
+          .setTitle(t('Card cover'))
+          .onClick(() => {
+            const current = item.data.blockId
+              ? stateManager.getSetting('card-covers')?.[item.data.blockId]
+              : undefined;
+
+            new CoverModal(stateManager.app, current || null, (cover) => {
+              const withId = ensureBlockId();
+              setCardCoverFor(stateManager, withId.data.blockId as string, cover);
+            }).open();
+          });
+      });
+
+      menu.addItem((i) => {
+        i.setIcon('lucide-x')
+          .setTitle(t('Remove cover'))
+          .onClick(() => {
+            if (item.data.blockId) {
+              setCardCoverFor(stateManager, item.data.blockId, null);
+            }
           });
       });
 
@@ -406,6 +435,62 @@ export function useItemMenu({
 
       menu.addSeparator();
 
+      menu.addItem((menuItem) => {
+        const submenu = (menuItem as any)
+          .setTitle(t('Add dependency'))
+          .setIcon('lucide-link')
+          .setSubmenu() as Menu;
+
+        (['FS', 'SS', 'FF'] as import('../timeline/dependencies').DependencyType[]).forEach(
+          (type) => {
+            submenu.addItem((ti) => {
+              const cardMenu = (ti as any)
+                .setTitle(type)
+                .setIcon('lucide-link')
+                .setSubmenu() as Menu;
+
+              const cards: Array<{ blockId: string; label: string }> = [];
+              stateManager.state.children.forEach((lane) =>
+                lane.children.forEach((entry) => {
+                  if (entry.data.blockId && entry.data.blockId !== item.data.blockId) {
+                    cards.push({
+                      blockId: entry.data.blockId,
+                      label: `${lane.data.title}: ${entry.data.title || entry.data.titleRaw.split('\n')[0]}`,
+                    });
+                  }
+                })
+              );
+
+              if (!cards.length) {
+                cardMenu.addItem((ci) => ci.setTitle(t('No cards available')).setDisabled(true));
+                return;
+              }
+
+              cards.forEach((card) => {
+                cardMenu.addItem((ci) =>
+                  ci.setTitle(card.label).onClick(() => {
+                    const currentId = ensureBlockId().data.blockId;
+                    if (currentId) setDependency(stateManager, currentId, card.blockId, type);
+                  })
+                );
+              });
+            });
+          }
+        );
+      });
+
+      if (item.data.blockId && getDependencyFor(stateManager, item.data.blockId)) {
+        menu.addItem((i) => {
+          i.setIcon('lucide-x')
+            .setTitle(t('Remove dependency'))
+            .onClick(() => {
+              if (item.data.blockId) removeDependency(stateManager, item.data.blockId);
+            });
+        });
+      }
+
+      menu.addSeparator();
+
       const boardTags = new Set<string>();
       stateManager.state.children.forEach((lane) =>
         lane.children.forEach((i) => i.data.metadata.tags?.forEach((tag) => boardTags.add(tag)))
@@ -458,6 +543,7 @@ export function useItemMenu({
               .setTitle(lanes[i].data.title)
               .onClick(() => {
                 if (path[0] === i) return;
+                if (!canInsertIntoLane(stateManager, stateManager.state, i, 1)) return;
                 stateManager.setState((boardData) => {
                   return moveEntity(boardData, path, [i, 0]);
                 });

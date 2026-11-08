@@ -4,6 +4,7 @@ import { Dispatch, StateUpdater, useContext, useEffect, useMemo, useState } from
 import { Path } from 'src/dnd/types';
 import { defaultSort } from 'src/helpers/util';
 import { getInboxTitle, isInboxEnabled, isInboxLane } from 'src/helpers/inbox';
+import { getSwimlaneConfig, setSwimlaneConfig, swimlaneModes } from 'src/helpers/swimlanes';
 import { t } from 'src/lang/helpers';
 import { lableToName } from 'src/parsers/helpers/inlineMetadata';
 
@@ -234,6 +235,38 @@ export function useSettingsMenu({
           .setIcon('lucide-archive')
           .setTitle(t('Archive cards'))
           .onClick(() => setConfirmAction('archive-items'));
+      })
+      .addItem((item) => {
+        item
+          .setIcon('gauge')
+          .setTitle(t('Set WIP limit'))
+          .onClick(() => {
+            boardModifiers.updateLane(
+              path,
+              update(lane, {
+                data: {
+                  wipLimit: { $set: true },
+                },
+              })
+            );
+            setEditState({ x: 0, y: 0 });
+          });
+      })
+      .addItem((item) => {
+        item
+          .setIcon('lucide-x')
+          .setTitle(t('Remove WIP limit'))
+          .onClick(() =>
+            boardModifiers.updateLane(
+              path,
+              update(lane, {
+                data: {
+                  wipLimit: { $set: false },
+                  maxItems: { $set: 0 },
+                },
+              })
+            )
+          );
       })
       .addSeparator()
       .addItem((i) => {

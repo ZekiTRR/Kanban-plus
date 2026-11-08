@@ -202,6 +202,7 @@ export const LaneHeader = memo(function LaneHeader({
           editState={editState}
           itemCount={lane.children.length}
           maxItems={lane.data.maxItems}
+          lane={lane}
         />
 
         <LaneButtons

@@ -7,6 +7,8 @@ import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { MarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
+import { t } from 'src/lang/helpers';
+import { getWipState } from '../../helpers/wipLimits';
 import { EditState, EditingState, isEditing } from '../types';
 
 export interface LaneTitleProps {
@@ -22,32 +24,37 @@ export function LaneLimitCounter({
   maxItems,
   itemCount,
   editState,
+  lane,
 }: {
   maxItems: number;
   itemCount: number;
   editState: EditState;
+  lane?: import('../types').Lane;
 }) {
   const { stateManager } = useContext(KanbanContext);
   const hideCount = stateManager.getSetting('hide-card-count');
 
   if (hideCount || isEditing(editState)) return null;
 
+  const limit = lane ? getWipState(stateManager, lane).limit : maxItems > 0 ? maxItems : null;
+  const exceeded = !!limit && itemCount > limit;
+  const title = lane?.data.title?.trim() || '';
+
   return (
     <div
-      className={classcat([
-        c('lane-title-count'),
-        {
-          'wip-exceeded': maxItems && maxItems < itemCount,
-        },
-      ])}
+      className={classcat([c('lane-title-count'), { 'wip-exceeded': exceeded }])}
+      data-wip-limit={limit || undefined}
+      data-wip-at-limit={limit && itemCount >= limit ? 'true' : undefined}
+      data-wip-exceeded={exceeded ? 'true' : undefined}
+      title={limit ? `${t('WIP limit reached')}: ${itemCount}/${limit}` : title}
     >
       {itemCount}
-      {maxItems > 0 && (
+      {limit ? (
         <>
           <span className={c('lane-title-count-separator')}>/</span>
-          <span className={c('lane-title-count-limit')}>{maxItems}</span>
+          <span className={c('lane-title-count-limit')}>{limit}</span>
         </>
-      )}
+      ) : null}
     </div>
   );
 }
