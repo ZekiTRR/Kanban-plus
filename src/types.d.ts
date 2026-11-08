@@ -1,6 +1,9 @@
 type HTMLAttributes<T extends EventTarget> = import('preact/compat').HTMLAttributes<T> &
   AriaAttributes;
 
+// Obsidian exposes the app instance as a global at runtime
+declare const app: import('obsidian').App;
+
 declare const Fragment: import('preact').FunctionComponent<Record<string, never>>;
 
 declare function h(

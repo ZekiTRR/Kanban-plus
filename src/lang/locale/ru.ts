@@ -218,6 +218,69 @@ const lang: Partial<Lang> = {
 
   // components/Editor/MarkdownEditor.tsx
   Submit: 'Сохранить',
+
+  // Kanban Plus
+  'Kanban Plus': 'Kanban Plus',
+  Color: 'Цвет',
+  'Custom color': 'Свой цвет',
+  'Remove color': 'Убрать цвет',
+  Overdue: 'Просрочено',
+  'Next 7 days': '7 дней',
+  'Clear filters': 'Сбросить фильтры',
+  'Add checklist': 'Добавить чек-лист',
+  'Detach lane': 'Открепить список',
+  'Snap lane back': 'Вернуть список в ряд',
+  'View as calendar': 'Вид: календарь',
+  Previous: 'Назад',
+  Next: 'Вперёд',
+  Month: 'Месяц',
+  Week: 'Неделя',
+  Unscheduled: 'Без даты',
+  'Color lanes': 'Цветные списки',
+  'When toggled, lanes with an assigned color will be tinted.':
+    'Если включено, списки с назначенным цветом будут окрашены.',
+  'Tint lane body': 'Окрашивать фон списка',
+  'When toggled, the lane color is applied to the lane body as well as the lane header.':
+    'Если включено, цвет списка применяется и к фону списка, а не только к заголовку.',
+  'Color cards': 'Цветные карточки',
+  'When toggled, cards with an assigned color will be highlighted.':
+    'Если включено, карточки с назначенным цветом будут выделены.',
+  'Card color style': 'Стиль цвета карточки',
+  'How card colors are displayed: a strip on top of the card or the full card background.':
+    'Как отображается цвет карточки: полоса сверху или весь фон карточки.',
+  Strip: 'Полоса',
+  'Full background': 'Весь фон',
+  'Show filter bar': 'Показывать панель фильтров',
+  'When toggled, a filter bar is displayed above the board with quick filters for tags and due dates.':
+    'Если включено, над доской отображается панель быстрых фильтров по тегам и датам.',
+  'Show checklist progress': 'Прогресс чек-листов',
+  'When toggled, cards containing markdown checkboxes display a progress counter and bar.':
+    'Если включено, карточки с чекбоксами показывают счётчик и полосу прогресса.',
+  'Enable animations': 'Включить анимации',
+  'When toggled, cards and lanes are animated: hover effects, drag physics and more.':
+    'Если включено, карточки и списки анимируются: эффекты наведения, физика перетаскивания и др.',
+  'Allow free-floating lanes': 'Разрешить свободные списки',
+  'When toggled, a lane can be dropped outside the lane row to leave it floating anywhere on the board. Clicking a floating lane or its magnet button snaps it back into the row.':
+    'Если включено, список можно перетащить за пределы ряда и оставить плавающим в любом месте доски. Клик по плавающему списку или кнопке-магниту возвращает его в ряд.',
+  'Enable board zoom': 'Масштаб доски',
+  'When toggled, the board can be zoomed with Ctrl + mouse wheel (or Cmd on macOS), two-finger pinch on touch screens, and the - / + buttons on the board.':
+    'Если включено, доску можно масштабировать Ctrl + колесо мыши (Cmd на macOS), щипком двумя пальцами на сенсорных экранах и кнопками − / + на доске.',
+  'Zoom out': 'Уменьшить',
+  'Zoom in': 'Увеличить',
+  'Reset zoom': 'Сбросить масштаб',
+  'Set period': 'Задать срок',
+  'Clear period': 'Убрать срок',
+  'Period start': 'Начало срока',
+  'Period end': 'Конец срока',
+  'Pick the first and the last day of the period.':
+    'Укажите первый и последний день срока.',
+  'Invalid start date': 'Некорректная дата начала',
+  'Invalid end date': 'Некорректная дата конца',
+  'The period end must not be before its start.': 'Конец срока не может быть раньше его начала.',
+  'Click to edit the period': 'Нажмите, чтобы изменить срок',
+  Period: 'Срок',
+  'Drop a card here to set it as the period':
+    'Перетащите карточку сюда, чтобы задать этот срок',
 };
 
 export default lang;

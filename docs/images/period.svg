@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" fill="none">
+  <defs>
+    <linearGradient id="pBg" x1="0" y1="0" x2="1200" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1b1c20"/>
+      <stop offset="1" stop-color="#141518"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+    <style>
+      .t { font-family: Inter, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      .cardTitle { font-size: 17px; font-weight: 600; fill: #e8ecf2; }
+      .tag { font-size: 12px; fill: #9fd0ff; }
+      .pill { font-size: 12px; font-weight: 600; fill: #cfe1ff; }
+      .muted { font-size: 12px; fill: #98a0aa; }
+      .modalTitle { font-size: 20px; font-weight: 700; fill: #eef1f5; }
+      .label { font-size: 13px; fill: #c9ced6; }
+      .date { font-size: 13px; fill: #e8ecf2; }
+      .btn { font-size: 13px; font-weight: 600; fill: #d7dae0; }
+      .btnAccent { font-size: 13px; font-weight: 700; fill: #ffffff; }
+      .menu { font-size: 13px; fill: #dfe3e8; }
+      .err { font-size: 12px; fill: #ff8a7a; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="640" rx="14" fill="url(#pBg)"/>
+  <rect x="0.5" y="0.5" width="1199" height="639" rx="14" stroke="#2c2f36"/>
+
+  <!-- Card with period -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="96" width="430" height="250" rx="12" fill="#2c3038"/>
+  </g>
+  <rect x="60" y="96" width="430" height="250" rx="12" fill="none" stroke="#3a3f48"/>
+  <rect x="60" y="96" width="6" height="250" rx="3" fill="#c377e0"/>
+
+  <text class="t cardTitle" x="90" y="136">Перезапуск лендинга</text>
+
+  <rect x="90" y="152" width="74" height="22" rx="11" fill="#1d3a52"/>
+  <text class="t tag" x="101" y="167">#marketing</text>
+  <rect x="172" y="152" width="52" height="22" rx="11" fill="#3a1f2b"/>
+  <text class="t tag" x="183" y="167">#web</text>
+
+  <!-- period badge -->
+  <g>
+    <rect x="90" y="192" width="196" height="30" rx="8" fill="#2f3b52" stroke="#4a6aa0"/>
+    <path d="M104 204h12v9h-12zM104 201h12" stroke="#8ab4f8" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <text class="t pill" x="126" y="212">5 фев – 10 фев</text>
+  </g>
+
+  <!-- due badge -->
+  <g>
+    <rect x="296" y="192" width="104" height="30" rx="8" fill="#40202a"/>
+    <text class="t pill" x="312" y="212" fill="#ff9d8f">просрочено</text>
+  </g>
+
+  <!-- checklist -->
+  <text class="t muted" x="90" y="252">☑ 2/4</text>
+  <rect x="134" y="245" width="230" height="6" rx="3" fill="#3a3f48"/>
+  <rect x="134" y="245" width="115" height="6" rx="3" fill="#61bd4f"/>
+
+  <text class="t muted" x="90" y="292">Бейдж срока: в процессе — акцент,</text>
+  <text class="t muted" x="90" y="312">просрочен — красный, выполнен — зелёный.</text>
+
+  <!-- Context menu -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="384" width="270" height="196" rx="9" fill="#26282e" stroke="#3a3f48"/>
+  </g>
+  <g class="t menu">
+    <text x="82" y="416">✎  Редактировать карточку</text>
+    <text x="82" y="450">🏷  Теги</text>
+    <text x="82" y="484">📅  Изменить дату</text>
+    <rect x="72" y="496" width="246" height="30" rx="6" fill="#2f3b52"/>
+    <text x="82" y="516" fill="#cfe1ff">📆  Задать срок</text>
+    <text x="82" y="548">✕  Убрать срок</text>
+  </g>
+
+  <!-- Modal -->
+  <g filter="url(#shadow)">
+    <rect x="640" y="80" width="500" height="410" rx="14" fill="#22242a" stroke="#3a3f48"/>
+  </g>
+  <text class="t modalTitle" x="676" y="130">Задать срок</text>
+  <text class="t muted" x="676" y="158">Укажите первый и последний день срока.</text>
+
+  <text class="t label" x="676" y="206">Начало срока</text>
+  <rect x="676" y="220" width="428" height="40" rx="7" fill="#1a1c20" stroke="#3a3f48"/>
+  <text class="t date" x="694" y="245">05.02.2026</text>
+  <path d="M1060 232h24v10h-24zM1060 228h24M1066 226v4M1078 226v4" stroke="#8b919a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+
+  <text class="t label" x="676" y="298">Конец срока</text>
+  <rect x="676" y="312" width="428" height="40" rx="7" fill="#1a1c20" stroke="#3a3f48"/>
+  <text class="t date" x="694" y="337">10.02.2026</text>
+  <path d="M1060 324h24v10h-24zM1060 320h24M1066 318v4M1078 318v4" stroke="#8b919a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+
+  <text class="t err" x="676" y="378">Конец срока не может быть раньше его начала.</text>
+
+  <g>
+    <rect x="676" y="410" width="120" height="38" rx="7" fill="none" stroke="#3a3f48"/>
+    <text class="t btn" x="694" y="434">Убрать срок</text>
+
+    <rect x="938" y="410" width="80" height="38" rx="7" fill="none" stroke="#3a3f48"/>
+    <text class="t btn" x="956" y="434">Отмена</text>
+
+    <rect x="1026" y="410" width="78" height="38" rx="7" fill="#4a6aa0"/>
+    <text class="t btnAccent" x="1040" y="434">Сохранить</text>
+  </g>
+
+  <!-- caption -->
+  <text class="t muted" x="640" y="536">Срок хранится в markdown как 🛫 … 📅 …</text>
+  <text class="t muted" x="640" y="558">и совместим с оригинальным Kanban и Tasks.</text>
+</svg>

@@ -20,6 +20,8 @@ import {
   DateColor,
   DateColorSetting,
   DateColorSettingTemplate,
+  ItemStyle,
+  LaneStyle,
   MetadataSetting,
   MetadataSettingTemplate,
   TagColor,
@@ -47,7 +49,7 @@ import { cleanUpTagSortSettings, renderTagSortSettings } from './settings/TagSor
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
-export type KanbanFormat = 'basic' | 'board' | 'table' | 'list';
+export type KanbanFormat = 'basic' | 'board' | 'table' | 'list' | 'calendar';
 
 export interface KanbanSettings {
   [frontmatterKey]?: KanbanFormat;
@@ -61,9 +63,16 @@ export interface KanbanSettings {
   'date-picker-week-start'?: number;
   'date-time-display-format'?: string;
   'date-trigger'?: string;
+  'enable-animations'?: boolean;
+  'enable-free-lanes'?: boolean;
+  'enable-zoom'?: boolean;
   'full-list-lane-width'?: boolean;
   'hide-card-count'?: boolean;
   'inline-metadata-position'?: 'body' | 'footer' | 'metadata-table';
+  'item-color-style'?: 'strip' | 'full';
+  'item-styles'?: Record<string, ItemStyle>;
+  'lane-color-body'?: boolean;
+  'lane-styles'?: LaneStyle[];
   'lane-width'?: number;
   'link-date-to-daily-note'?: boolean;
   'list-collapse'?: boolean[];
@@ -79,7 +88,11 @@ export interface KanbanSettings {
   'show-add-list'?: boolean;
   'show-archive-all'?: boolean;
   'show-board-settings'?: boolean;
+  'show-checklist-progress'?: boolean;
   'show-checkboxes'?: boolean;
+  'show-filters-bar'?: boolean;
+  'show-item-colors'?: boolean;
+  'show-lane-colors'?: boolean;
   'show-relative-date'?: boolean;
   'show-search'?: boolean;
   'show-set-view'?: boolean;
@@ -95,6 +108,7 @@ export interface KanbanSettings {
 export interface KanbanViewSettings {
   [frontmatterKey]?: KanbanFormat;
   'list-collapse'?: boolean[];
+  zoom?: number;
 }
 
 export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
@@ -109,9 +123,16 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'date-picker-week-start',
   'date-time-display-format',
   'date-trigger',
+  'enable-animations',
+  'enable-free-lanes',
+  'enable-zoom',
   'full-list-lane-width',
   'hide-card-count',
   'inline-metadata-position',
+  'item-color-style',
+  'item-styles',
+  'lane-color-body',
+  'lane-styles',
   'lane-width',
   'link-date-to-daily-note',
   'list-collapse',
@@ -127,7 +148,11 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'show-add-list',
   'show-archive-all',
   'show-board-settings',
+  'show-checklist-progress',
   'show-checkboxes',
+  'show-filters-bar',
+  'show-item-colors',
+  'show-lane-colors',
   'show-relative-date',
   'show-search',
   'show-set-view',
@@ -1530,6 +1555,141 @@ export class SettingsManager {
             });
         });
     });
+
+    contentEl.createEl('br');
+    contentEl.createEl('h4', { text: t('Kanban Plus') });
+
+    const toggleSetting = (
+      key: keyof KanbanSettings,
+      name: string,
+      desc: string,
+      defaultValue: boolean
+    ) => {
+      new Setting(contentEl)
+        .setName(name)
+        .setDesc(desc)
+        .then((setting) => {
+          let toggleComponent: ToggleComponent;
+
+          setting
+            .addToggle((toggle) => {
+              toggleComponent = toggle;
+
+              const [value, globalValue] = this.getSetting(key, local);
+
+              if (value !== undefined && value !== null) {
+                toggle.setValue(value as boolean);
+              } else if (globalValue !== undefined && globalValue !== null) {
+                toggle.setValue(globalValue as boolean);
+              } else {
+                toggle.setValue(defaultValue);
+              }
+
+              toggle.onChange((newValue) => {
+                this.applySettingsUpdate({
+                  [key]: { $set: newValue },
+                } as Spec<KanbanSettings>);
+              });
+            })
+            .addExtraButton((b) => {
+              b.setIcon('lucide-rotate-ccw')
+                .setTooltip(t('Reset to default'))
+                .onClick(() => {
+                  const [, globalValue] = this.getSetting(key, local);
+                  toggleComponent.setValue((globalValue as boolean) ?? defaultValue);
+
+                  this.applySettingsUpdate({
+                    $unset: [key],
+                  } as Spec<KanbanSettings>);
+                });
+            });
+        });
+    };
+
+    toggleSetting(
+      'show-lane-colors',
+      t('Color lanes'),
+      t('When toggled, lanes with an assigned color will be tinted.'),
+      true
+    );
+
+    toggleSetting(
+      'lane-color-body',
+      t('Tint lane body'),
+      t('When toggled, the lane color is applied to the lane body as well as the lane header.'),
+      true
+    );
+
+    toggleSetting(
+      'show-item-colors',
+      t('Color cards'),
+      t('When toggled, cards with an assigned color will be highlighted.'),
+      true
+    );
+
+    new Setting(contentEl)
+      .setName(t('Card color style'))
+      .setDesc(
+        t('How card colors are displayed: a strip on top of the card or the full card background.')
+      )
+      .addDropdown((dropdown) => {
+        dropdown.addOption('strip', t('Strip'));
+        dropdown.addOption('full', t('Full background'));
+
+        const [value, globalValue] = this.getSetting('item-color-style', local);
+
+        dropdown.setValue((value as string) || (globalValue as string) || 'strip');
+        dropdown.onChange((value) => {
+          this.applySettingsUpdate({
+            'item-color-style': {
+              $set: value as 'strip' | 'full',
+            },
+          });
+        });
+      });
+
+    toggleSetting(
+      'show-filters-bar',
+      t('Show filter bar'),
+      t(
+        'When toggled, a filter bar is displayed above the board with quick filters for tags and due dates.'
+      ),
+      true
+    );
+
+    toggleSetting(
+      'show-checklist-progress',
+      t('Show checklist progress'),
+      t(
+        'When toggled, cards containing markdown checkboxes display a progress counter and bar.'
+      ),
+      true
+    );
+
+    toggleSetting(
+      'enable-animations',
+      t('Enable animations'),
+      t('When toggled, cards and lanes are animated: hover effects, drag physics and more.'),
+      true
+    );
+
+    toggleSetting(
+      'enable-free-lanes',
+      t('Allow free-floating lanes'),
+      t(
+        'When toggled, a lane can be dropped outside the lane row to leave it floating anywhere on the board. Clicking a floating lane or its magnet button snaps it back into the row.'
+      ),
+      false
+    );
+
+    toggleSetting(
+      'enable-zoom',
+      t('Enable board zoom'),
+      t(
+        'When toggled, the board can be zoomed with Ctrl + mouse wheel (or Cmd on macOS), two-finger pinch on touch screens, and the - / + buttons on the board.'
+      ),
+      true
+    );
   }
 
   cleanUp() {

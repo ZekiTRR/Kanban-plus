@@ -1,11 +1,9 @@
 {
-	"id": "obsidian-kanban",
-	"name": "Kanban",
-	"version": "2.0.51",
+	"id": "obsidian-kanban-plus",
+	"name": "Kanban Plus",
+	"version": "2.1.0",
 	"minAppVersion": "1.0.0",
-	"description": "Create markdown-backed Kanban boards in Obsidian.",
-	"author": "mgmeyers",
-	"authorUrl": "https://github.com/mgmeyers/obsidian-kanban",
-	"helpUrl": "https://publish.obsidian.md/kanban/Obsidian+Kanban+Plugin",
+	"description": "Markdown-backed Kanban boards in Obsidian, supercharged: colored lanes & cards, deadlines & periods, checklists, free-floating lanes, zoom, animations and a calendar planner. Fork of obsidian-kanban.",
+	"author": "Yoko",
 	"isDesktopOnly": false
 }

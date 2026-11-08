@@ -274,6 +274,68 @@ const en = {
 
   // components/Editor/MarkdownEditor.tsx
   Submit: 'Submit',
+
+  // Kanban Plus
+  'Kanban Plus': 'Kanban Plus',
+  Color: 'Color',
+  'Custom color': 'Custom color',
+  'Remove color': 'Remove color',
+  Overdue: 'Overdue',
+  'Next 7 days': 'Next 7 days',
+  'Clear filters': 'Clear filters',
+  'Add checklist': 'Add checklist',
+  'Detach lane': 'Detach lane',
+  'Snap lane back': 'Snap lane back',
+  'View as calendar': 'View as calendar',
+  Previous: 'Previous',
+  Next: 'Next',
+  Month: 'Month',
+  Week: 'Week',
+  Unscheduled: 'Unscheduled',
+  'Color lanes': 'Color lanes',
+  'When toggled, lanes with an assigned color will be tinted.':
+    'When toggled, lanes with an assigned color will be tinted.',
+  'Tint lane body': 'Tint lane body',
+  'When toggled, the lane color is applied to the lane body as well as the lane header.':
+    'When toggled, the lane color is applied to the lane body as well as the lane header.',
+  'Color cards': 'Color cards',
+  'When toggled, cards with an assigned color will be highlighted.':
+    'When toggled, cards with an assigned color will be highlighted.',
+  'Card color style': 'Card color style',
+  'How card colors are displayed: a strip on top of the card or the full card background.':
+    'How card colors are displayed: a strip on top of the card or the full card background.',
+  Strip: 'Strip',
+  'Full background': 'Full background',
+  'Show filter bar': 'Show filter bar',
+  'When toggled, a filter bar is displayed above the board with quick filters for tags and due dates.':
+    'When toggled, a filter bar is displayed above the board with quick filters for tags and due dates.',
+  'Show checklist progress': 'Show checklist progress',
+  'When toggled, cards containing markdown checkboxes display a progress counter and bar.':
+    'When toggled, cards containing markdown checkboxes display a progress counter and bar.',
+  'Enable animations': 'Enable animations',
+  'When toggled, cards and lanes are animated: hover effects, drag physics and more.':
+    'When toggled, cards and lanes are animated: hover effects, drag physics and more.',
+  'Allow free-floating lanes': 'Allow free-floating lanes',
+  'When toggled, a lane can be dropped outside the lane row to leave it floating anywhere on the board. Clicking a floating lane or its magnet button snaps it back into the row.':
+    'When toggled, a lane can be dropped outside the lane row to leave it floating anywhere on the board. Clicking a floating lane or its magnet button snaps it back into the row.',
+  'Enable board zoom': 'Enable board zoom',
+  'When toggled, the board can be zoomed with Ctrl + mouse wheel (or Cmd on macOS), two-finger pinch on touch screens, and the - / + buttons on the board.':
+    'When toggled, the board can be zoomed with Ctrl + mouse wheel (or Cmd on macOS), two-finger pinch on touch screens, and the - / + buttons on the board.',
+  'Zoom out': 'Zoom out',
+  'Zoom in': 'Zoom in',
+  'Reset zoom': 'Reset zoom',
+  'Set period': 'Set period',
+  'Clear period': 'Clear period',
+  'Period start': 'Period start',
+  'Period end': 'Period end',
+  'Pick the first and the last day of the period.':
+    'Pick the first and the last day of the period.',
+  'Invalid start date': 'Invalid start date',
+  'Invalid end date': 'Invalid end date',
+  'The period end must not be before its start.': 'The period end must not be before its start.',
+  'Click to edit the period': 'Click to edit the period',
+  Period: 'Period',
+  'Drop a card here to set it as the period': 'Drop a card here to set it as the period',
 };
 
 export type Lang = typeof en;

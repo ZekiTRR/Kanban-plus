@@ -8,8 +8,9 @@ import { lableToName } from 'src/parsers/helpers/inlineMetadata';
 
 import { anyToString } from '../Item/MetadataTable';
 import { KanbanContext } from '../context';
+import { addColorMenu, setLaneColor, setLanePos } from '../colors';
 import { c, generateInstanceId } from '../helpers';
-import { EditState, Lane, LaneSort, LaneTemplate } from '../types';
+import { EditState, Lane, LaneSort, LaneStyle, LaneTemplate } from '../types';
 
 export type LaneAction = 'delete' | 'archive' | 'archive-items' | null;
 
@@ -64,9 +65,19 @@ export interface UseSettingsMenuParams {
   setEditState: Dispatch<StateUpdater<EditState>>;
   path: Path;
   lane: Lane;
+  isFloating?: boolean;
+  onMagnet?: () => void;
+  getDetachPos?: () => { x: number; y: number } | null;
 }
 
-export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuParams) {
+export function useSettingsMenu({
+  setEditState,
+  path,
+  lane,
+  isFloating,
+  onMagnet,
+  getDetachPos,
+}: UseSettingsMenuParams) {
   const { stateManager, boardModifiers } = useContext(KanbanContext);
   const [confirmAction, setConfirmAction] = useState<LaneAction>(null);
 
@@ -88,13 +99,46 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
       if (!canSortTags && item.data.metadata.tags?.length) canSortTags = true;
     });
 
-    const menu = new Menu()
-      .addItem((item) => {
-        item
-          .setIcon('lucide-edit-3')
-          .setTitle(t('Edit list'))
-          .onClick(() => setEditState({ x: 0, y: 0 }));
-      })
+    const menu = new Menu().addItem((item) => {
+      item
+        .setIcon('lucide-edit-3')
+        .setTitle(t('Edit list'))
+        .onClick(() => setEditState({ x: 0, y: 0 }));
+    });
+
+    addColorMenu(menu, {
+      currentColor: (stateManager.getSetting('lane-styles') as LaneStyle[] | undefined)?.[
+        path.last()
+      ]?.color,
+      onPick: (color) =>
+        setLaneColor(stateManager, path.last(), stateManager.state.children.length, color),
+      onClear: () => setLaneColor(stateManager, path.last(), stateManager.state.children.length, null),
+    });
+
+    // Kanban Plus: free-floating lanes
+    if (stateManager.getSetting('enable-free-lanes')) {
+      if (isFloating) {
+        menu.addItem((i) => {
+          i.setIcon('lucide-magnet')
+            .setTitle(t('Snap lane back'))
+            .onClick(() => onMagnet?.());
+        });
+      } else if (getDetachPos) {
+        menu.addItem((i) => {
+          i.setIcon('lucide-pin')
+            .setTitle(t('Detach lane'))
+            .onClick(() => {
+              const pos = getDetachPos();
+
+              if (pos) {
+                setLanePos(stateManager, path.last(), stateManager.state.children.length, pos);
+              }
+            });
+        });
+      }
+    }
+
+    menu
       .addItem((item) => {
         item
           .setIcon('lucide-archive')
@@ -339,7 +383,7 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
     }
 
     return menu;
-  }, [stateManager, setConfirmAction, path, lane]);
+  }, [stateManager, setConfirmAction, path, lane, isFloating, onMagnet, getDetachPos]);
 
   return {
     settingsMenu,

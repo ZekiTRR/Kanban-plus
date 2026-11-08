@@ -498,6 +498,14 @@ export default class KanbanPlugin extends Plugin {
               )
               .addItem((item) =>
                 item
+                  .setTitle(t('View as calendar'))
+                  .setSection('pane')
+                  .setIcon('lucide-calendar-days')
+                  .setChecked(boardView === 'calendar')
+                  .onClick(() => kanbanView.setView('calendar'))
+              )
+              .addItem((item) =>
+                item
                   .setTitle(t('View as list'))
                   .setSection('pane')
                   .setIcon('lucide-server')
@@ -694,6 +702,22 @@ export default class KanbanPlugin extends Plugin {
     });
 
     this.addCommand({
+      id: 'view-calendar',
+      name: t('View as calendar'),
+      checkCallback: (checking) => {
+        const view = app.workspace.getActiveViewOfType(KanbanView);
+
+        if (checking) {
+          return view && view instanceof KanbanView;
+        }
+
+        if (view && view instanceof KanbanView) {
+          view.setView('calendar');
+        }
+      },
+    });
+
+    this.addCommand({
       id: 'view-list',
       name: t('View as list'),
       checkCallback: (checking) => {
@@ -719,6 +743,45 @@ export default class KanbanPlugin extends Plugin {
         if (checking) return true;
 
         view.getBoardSettings();
+      },
+    });
+
+    this.addCommand({
+      id: 'zoom-in',
+      name: t('Zoom in'),
+      checkCallback: (checking) => {
+        const view = app.workspace.getActiveViewOfType(KanbanView);
+
+        if (!view) return false;
+        if (checking) return true;
+
+        view.emitter.emit('zoom', { action: 'in' });
+      },
+    });
+
+    this.addCommand({
+      id: 'zoom-out',
+      name: t('Zoom out'),
+      checkCallback: (checking) => {
+        const view = app.workspace.getActiveViewOfType(KanbanView);
+
+        if (!view) return false;
+        if (checking) return true;
+
+        view.emitter.emit('zoom', { action: 'out' });
+      },
+    });
+
+    this.addCommand({
+      id: 'zoom-reset',
+      name: t('Reset zoom'),
+      checkCallback: (checking) => {
+        const view = app.workspace.getActiveViewOfType(KanbanView);
+
+        if (!view) return false;
+        if (checking) return true;
+
+        view.emitter.emit('zoom', { action: 'reset' });
       },
     });
   }
@@ -789,7 +852,7 @@ export default class KanbanPlugin extends Plugin {
               self.kanbanFileModes[this.id || state.state.file] !== 'markdown'
             ) {
               // Then check for the kanban frontMatterKey
-              const cache = self.app.metadataCache.getCache(state.state.file);
+              const cache = self.app.metadataCache.getCache(state.state.file as string);
 
               if (cache?.frontmatter && cache.frontmatter[frontmatterKey]) {
                 // If we have it, force the view type to kanban
@@ -798,7 +861,7 @@ export default class KanbanPlugin extends Plugin {
                   type: kanbanViewType,
                 };
 
-                self.kanbanFileModes[state.state.file] = kanbanViewType;
+                self.kanbanFileModes[state.state.file as string] = kanbanViewType;
 
                 return next.apply(this, [newState, ...rest]);
               }

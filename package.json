@@ -1,7 +1,7 @@
 {
-  "name": "obsidian-kanban",
-  "version": "2.0.51",
-  "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+  "name": "obsidian-kanban-plus",
+  "version": "2.1.0",
+  "description": "Markdown-backed Kanban boards in Obsidian, supercharged: colored lanes & cards, deadlines & periods, checklists, free-floating lanes, zoom, animations and a calendar planner. Fork of obsidian-kanban.",
   "main": "main.js",
   "scripts": {
     "typecheck": "tsc --noemit",
@@ -16,8 +16,8 @@
     "release": "git commit -m $npm_package_version && git tag $npm_package_version && git push && git push --tags"
   },
   "keywords": [],
-  "author": "",
-  "license": "MIT",
+  "author": "Yoko",
+  "license": "GPL-3.0",
   "devDependencies": {
     "@codemirror/commands": "^6.0.0",
     "@codemirror/state": "^6.0.0",

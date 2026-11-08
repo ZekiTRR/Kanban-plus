@@ -1,18 +1,73 @@
-# Obsidian Kanban Plugin
+# Kanban Plus
 
-**The Kanban plugin is looking for new maintainers.** Interested? [Read more here.](https://github.com/mgmeyers/obsidian-kanban/blob/main/MAINTAINERS.md)
+**Русский** · [English](./README.en.md)
 
----
+Kanban Plus — форк [Obsidian Kanban](https://github.com/mgmeyers/obsidian-kanban) с фишками из Trello, Plaky, Planka и Notion. Доски остаются обычным markdown-файлом и открываются оригинальным плагином.
 
-Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
+![Доска Kanban Plus](docs/images/board.svg)
 
-- [Bugs, Issues, & Feature Requests](https://github.com/mgmeyers/obsidian-kanban/issues)
-- [Development Roadmap](https://github.com/mgmeyers/obsidian-kanban/projects/1)
+## Возможности
 
-![Screen Shot 2021-09-16 at 12.58.22 PM.png](https://github.com/mgmeyers/obsidian-kanban/blob/main/docs/Assets/Screen%20Shot%202021-09-16%20at%2012.58.22%20PM.png)
+- **🎨 Цветные списки и карточки.** Цвет шапки и фона списка, полоса или фон карточки, палитра и свой цвет. Всё хранится в блоке `%% kanban:settings`.
+- **🏷 Теги и фильтры.** Теги с цветами, панель быстрых фильтров (теги, «Просрочено», «Сегодня», «7 дней») и подменю тегов в карточке.
+- **📌 Свободные списки.** Список можно вытащить из ряда и оставить плавать в любом месте доски. Кнопка-магнит или клик по фону плавно возвращает его в ряд.
+- **🗓 Сроки (периоды).** Не только дедлайн, но и диапазон «с какого по какое» с семантической подсветкой бейджа.
+- **📅 Календарь-планировщик.** Месяц и неделя, drag-and-drop карточек по дням, панель «Без даты», создание срока протяжкой по дням.
+- **✅ Чек-листы.** Прогресс `☑ 2/5` с полосой прямо на карточке.
+- **✨ Анимации.** Подъём карточки, физика перетаскивания, FLIP-переходы списков, `prefers-reduced-motion`.
+- **🔍 Масштаб доски.** `Ctrl + колесо` / `Cmd + колесо`, щипок двумя пальцами, кнопки `− / % / +` (40–200%).
 
-![Screen Shot 2021-09-16 at 1.10.38 PM.png](https://github.com/mgmeyers/obsidian-kanban/blob/main/docs/Assets/Screen%20Shot%202021-09-16%20at%201.10.38%20PM.png)
+## Установка
 
-## Documentation
+**BRAT:** добавьте репозиторий `ZekiTRR/Kanban-plus` в [BRAT](https://github.com/TfTHacker/obsidian42-brat) и установите плагин.
 
-Find the plugin documentation here: [Obsidian Kanban Plugin Documentation](https://publish.obsidian.md/kanban/)
+**Вручную:**
+
+1. Скачайте `main.js`, `manifest.json`, `styles.css` из [последнего релиза](https://github.com/ZekiTRR/Kanban-plus/releases/latest).
+2. Положите их в `<vault>/.obsidian/plugins/obsidian-kanban-plus/`.
+3. Включите **Kanban Plus** в настройках Obsidian.
+
+> Плагин использует `id: obsidian-kanban-plus`, поэтому не включайте одновременно с оригинальным `obsidian-kanban`.
+
+## Сроки
+
+В меню карточки выберите **«Задать срок»** и укажите начало и конец. На карточке появится бейдж `5 фев – 10 фев`:
+
+- акцент — срок идёт сейчас;
+- красный — просрочен;
+- зелёный — карточка выполнена.
+
+Срок хранится в markdown как `🛫 YYYY-MM-DD … 📅 YYYY-MM-DD`, поэтому файл остаётся совместимым с Tasks и оригинальным Kanban.
+
+![Срок карточки](docs/images/period.svg)
+
+## Календарь
+
+Переключите вид доски на **календарь** (иконка вида или команда «View as calendar»).
+
+- Бросьте карточку на день — дата (или весь срок) перенесётся.
+- Протяните мышь по нескольким дням и бросьте в выделение карточку — получите срок.
+- Панель «Без даты» сбрасывает даты.
+- ПКМ по карточке — срок, дата, архив, удаление.
+
+![Календарь](docs/images/calendar.svg)
+
+## Совместимость
+
+- Ключ `kanban-plugin` и синтаксис карточек не менялись.
+- Новые настройки пишутся в `%% kanban:settings`; оригинальный плагин их просто игнорирует.
+- Эмодзи-даты Tasks (`🛫`, `📅`, `✅`) разбираются без установленного Tasks.
+
+## Разработка
+
+```bash
+npm install
+npm run dev     # сборка с watch
+npm run build   # production-сборка
+```
+
+Изменения — в `src/`, собираются в `main.js` и `styles.css`.
+
+## Лицензия
+
+GPL-3.0. Основано на [obsidian-kanban](https://github.com/mgmeyers/obsidian-kanban) © mgmeyers.

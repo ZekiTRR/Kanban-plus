@@ -1786,3 +1786,853 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
     background-color: var(--date-background-color, rgba(var(--mono-rgb-100), 0.05));
   }
 }
+
+/* Kanban Plus: lane & card colors ---------------------------------------- */
+
+.kanban-plugin__color-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-inline-start: 8px;
+  vertical-align: middle;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.kanban-plugin__color-swatch-label {
+  margin-inline-start: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.kanban-plugin__color-picker-modal {
+  .kanban-plugin__color-picker-input {
+    width: 100%;
+    margin-block: 10px;
+  }
+
+  .kanban-plugin__color-picker-native {
+    width: 100%;
+    height: 40px;
+    margin-block: 8px;
+    padding: 4px;
+    border-radius: var(--input-radius, 6px);
+    cursor: pointer;
+  }
+}
+
+.kanban-plugin__lane-wrapper.has-lane-color {
+  .kanban-plugin__lane {
+    background-color: var(--lane-color-body-bg, var(--background-secondary));
+    overflow: hidden;
+  }
+
+  .kanban-plugin__lane-header-wrapper {
+    background-color: var(--lane-color-header-bg);
+    color: var(--lane-color-header-fg);
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+
+    .kanban-plugin__lane-title-text,
+    .kanban-plugin__lane-title-count,
+    .clickable-icon,
+    .kanban-plugin__lane-grip svg {
+      color: inherit;
+    }
+  }
+
+  &.collapse-horizontal .kanban-plugin__lane-header-wrapper,
+  &.collapse-vertical .kanban-plugin__lane-header-wrapper {
+    background-color: var(--lane-color-header-bg);
+  }
+
+  .kanban-plugin__lane-form-wrapper {
+    background-color: var(--lane-color-header-bg);
+  }
+}
+
+.kanban-plugin__item.has-item-color.item-color-strip {
+  border-top: 4px solid var(--item-color);
+}
+
+.kanban-plugin__item.has-item-color.item-color-full {
+  background-color: var(--item-color-bg, var(--background-primary));
+
+  // The inner wrappers have opaque backgrounds that would otherwise
+  // completely hide the full-card tint — make them transparent so the
+  // tint shows through (text keeps its readable colors).
+  .kanban-plugin__item-content-wrapper,
+  .kanban-plugin__item-title-wrapper {
+    background-color: transparent;
+  }
+
+  .kanban-plugin__item-metadata-wrapper:not(:empty) {
+    background-color: transparent;
+  }
+}
+
+/* Kanban Plus: filter bar ------------------------------------------------ */
+
+.kanban-plugin__filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 10px 2px;
+  align-items: center;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.kanban-plugin__filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-ui-smaller);
+  padding: 2px 10px;
+  border-radius: var(--radius-s);
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+  user-select: none;
+  color: var(--text-muted);
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  &:hover {
+    border-color: var(--background-modifier-border-hover);
+    color: var(--text-normal);
+  }
+
+  &.is-active {
+    background-color: hsla(var(--interactive-accent-hsl), 0.15);
+    border-color: hsla(var(--interactive-accent-hsl), 0.9);
+    color: var(--text-normal);
+  }
+
+  &.is-clear {
+    border-style: dashed;
+  }
+}
+
+.kanban-plugin__filter-chip-count {
+  font-size: var(--font-ui-smallest);
+  opacity: 0.7;
+}
+
+/* Kanban Plus: animations ------------------------------------------------ */
+
+@keyframes kp-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.kanban-plugin.kp-anim {
+  .kanban-plugin__item {
+    transition:
+      transform 150ms ease,
+      box-shadow 150ms ease,
+      opacity 300ms cubic-bezier(0.25, 1, 0.5, 1),
+      background-color 150ms ease,
+      border-color 150ms ease;
+
+    &:not(.kp-pop-in):hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.08),
+        0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    &.kp-pop-in {
+      animation: kp-pop-in 200ms cubic-bezier(0.25, 1, 0.5, 1);
+    }
+  }
+
+  .kanban-plugin__lane-grip {
+    opacity: 0.6;
+    transition: opacity 120ms ease, color 120ms ease;
+  }
+
+  .kanban-plugin__lane-wrapper:hover .kanban-plugin__lane-grip {
+    opacity: 1;
+  }
+
+  .kanban-plugin__item-tag,
+  .kanban-plugin__date {
+    transition: filter 120ms ease;
+
+    &:hover {
+      filter: brightness(1.08);
+    }
+  }
+
+  .kanban-plugin__filter-chip {
+    transition:
+      transform 120ms ease,
+      background-color 120ms ease,
+      border-color 120ms ease,
+      color 120ms ease;
+
+      &:active {
+      transform: scale(0.96);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kanban-plugin.kp-anim {
+    .kanban-plugin__item,
+    .kanban-plugin__item-tag,
+    .kanban-plugin__date,
+    .kanban-plugin__filter-chip {
+      transition: none;
+      animation: none;
+      transform: none !important;
+    }
+  }
+}
+
+/* Kanban Plus: due-date badge semantics & overdue ------------------------ */
+
+.kanban-plugin__item.is-overdue {
+  border-color: hsla(var(--color-red-hsl), 0.55);
+  box-shadow: inset 3px 0 0 var(--color-red, #eb5a46);
+}
+
+.kanban-plugin__item-metadata-date-wrapper.is-overdue,
+.kanban-plugin__item-metadata-date-wrapper.is-today,
+.kanban-plugin__item-metadata-date-wrapper.is-complete {
+  padding: 1px 6px;
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller);
+}
+
+.kanban-plugin__item-metadata-date-wrapper.is-overdue:not(.has-background) {
+  --date-color: var(--color-red, #eb5a46);
+  background-color: rgba(var(--color-red-rgb, 235, 90, 70), 0.14);
+  font-weight: 600;
+
+  svg {
+    color: var(--color-red, #eb5a46);
+  }
+}
+
+.kanban-plugin__item-metadata-date-wrapper.is-today:not(.has-background) {
+  --date-color: var(--color-yellow, #f2d600);
+  background-color: rgba(242, 214, 0, 0.22);
+  color: var(--text-normal);
+}
+
+.kanban-plugin__item-metadata-date-wrapper.is-complete:not(.has-background) {
+  --date-color: var(--color-green, #61bd4f);
+  background-color: rgba(97, 189, 79, 0.18);
+}
+
+/* Kanban Plus: deadline periods (start → due) ----------------------------- */
+
+.kanban-plugin__item-metadata-period {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller);
+  background-color: hsla(var(--interactive-accent-hsl), 0.12);
+  color: var(--text-normal);
+  cursor: pointer;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  .kanban-plugin__period-icon {
+    display: inline-flex;
+    color: var(--text-muted);
+
+    svg {
+      width: 0.9em;
+      height: 0.9em;
+    }
+  }
+
+  .kanban-plugin__period-sep {
+    color: var(--text-faint);
+  }
+
+  &:hover {
+    background-color: hsla(var(--interactive-accent-hsl), 0.2);
+  }
+
+  &.is-overdue:not(.has-background) {
+    background-color: rgba(235, 90, 70, 0.16);
+    color: var(--text-normal);
+    font-weight: 600;
+
+    .kanban-plugin__period-icon {
+      color: var(--color-red, #eb5a46);
+    }
+  }
+
+  &.is-today:not(.has-background) {
+    background-color: rgba(242, 214, 0, 0.22);
+  }
+
+  &.is-in-progress:not(.has-background) {
+    background-color: hsla(var(--interactive-accent-hsl), 0.16);
+    box-shadow: inset 2px 0 0 var(--interactive-accent);
+  }
+
+  &.is-complete:not(.has-background) {
+    background-color: rgba(97, 189, 79, 0.18);
+    color: var(--text-muted);
+  }
+}
+
+.kanban-plugin__item-metadata-date-wrapper.is-period-start:not(.has-background) {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: var(--radius-s);
+  background-color: hsla(var(--interactive-accent-hsl), 0.1);
+}
+
+/* Kanban Plus: period modal ---------------------------------------------- */
+
+.kanban-plugin__period-modal {
+  .kanban-plugin__period-modal-desc {
+    color: var(--text-muted);
+    font-size: var(--font-ui-small);
+    margin-block-start: -6px;
+  }
+
+  .kanban-plugin__period-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-block: 8px;
+
+    label {
+      flex-grow: 1;
+      color: var(--text-normal);
+    }
+  }
+
+  .kanban-plugin__period-input {
+    width: 55%;
+  }
+
+  .kanban-plugin__period-error {
+    color: var(--text-error);
+    font-size: var(--font-ui-small);
+    min-height: 1.2em;
+  }
+}
+
+/* Kanban Plus: checklist progress ---------------------------------------- */
+
+.kanban-plugin__item-checklist {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin-block-start: 4px;
+  user-select: none;
+}
+
+.kanban-plugin__item-checklist-bar {
+  position: relative;
+  flex-grow: 1;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--background-modifier-border);
+  overflow: hidden;
+}
+
+.kanban-plugin__item-checklist-bar-fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: 2px;
+  background-color: var(--color-green, #61bd4f);
+  transition: width 200ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.kanban-plugin__item-checklist.is-done {
+  color: var(--color-green, #61bd4f);
+}
+
+/* Kanban Plus: free-floating lanes --------------------------------------- */
+
+.kanban-plugin__board.kp-free-layout > div {
+  position: relative;
+  // Floating lanes are absolutely positioned inside this element, so it must
+  // not clip them and it must be large enough to contain them while scrolling.
+  min-height: max(320px, 100%);
+  min-width: 100%;
+  overflow: visible;
+}
+
+// When the board is zoomed, the zoomed content needs vertical scrolling too
+// (horizontal board otherwise forces overflow-y: hidden).
+.kanban-plugin__board.kp-zoomed.kanban-plugin__horizontal {
+  overflow-y: auto;
+}
+
+.kanban-plugin__board.kp-zoomed.kanban-plugin__vertical {
+  overflow-x: auto;
+}
+
+.kanban-plugin__lane-wrapper.kp-floating {
+  position: absolute;
+  z-index: 40;
+  max-height: none;
+  // Let the drag feel instantaneous; FLIP animations set their own transition.
+  transition: none;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.1),
+    0 10px 28px rgba(0, 0, 0, 0.16);
+
+  .kanban-plugin__lane-items {
+    max-height: 60vh;
+  }
+
+  .kanban-plugin__lane-grip {
+    cursor: grab;
+    touch-action: none;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  &.is-free-dragging {
+    opacity: 0.96;
+    cursor: grabbing;
+    user-select: none;
+    will-change: transform;
+    box-shadow:
+      0 6px 16px rgba(0, 0, 0, 0.16),
+      0 16px 40px rgba(0, 0, 0, 0.22);
+
+    .kanban-plugin__lane-grip {
+      cursor: grabbing;
+    }
+
+    * {
+      user-select: none;
+    }
+  }
+
+  // Magnet button accent so users notice the snap-back action
+  .kanban-plugin__lane-settings-button-wrapper .clickable-icon {
+    &:hover {
+      color: var(--interactive-accent);
+    }
+  }
+}
+
+/* Kanban Plus: board zoom --------------------------------------------------- */
+
+.kanban-plugin__zoom-controls {
+  position: absolute;
+  inset-block-end: 14px;
+  inset-inline-end: 14px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-m, 8px);
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-primary);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    0 6px 18px rgba(0, 0, 0, 0.1);
+  user-select: none;
+}
+
+.kanban-plugin__zoom-button,
+.kanban-plugin__zoom-level {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  min-height: 30px;
+  padding: 4px 6px;
+  border-radius: var(--radius-s, 6px);
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+
+  &:hover {
+    background-color: var(--background-secondary);
+    color: var(--text-normal);
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
+.kanban-plugin__zoom-level {
+  font-size: var(--font-ui-smaller);
+  font-weight: 600;
+  min-width: 52px;
+}
+
+.kanban-plugin__view-zoom-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.is-mobile .kanban-plugin__zoom-controls {
+  inset-block-end: calc(14px + var(--mobile-navbar-height, 0px));
+  inset-inline-end: 10px;
+
+  .kanban-plugin__zoom-button,
+  .kanban-plugin__zoom-level {
+    min-width: 34px;
+    min-height: 34px;
+  }
+}
+
+/* Kanban Plus: calendar view ---------------------------------------------- */
+
+.kanban-plugin__calendar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 10px 14px;
+  overflow: auto;
+}
+
+.kanban-plugin__calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-block-end: 10px;
+  flex-shrink: 0;
+}
+
+.kanban-plugin__calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kanban-plugin__calendar-nav-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-small);
+}
+
+.kanban-plugin__calendar-title {
+  margin-inline-start: 8px;
+  font-weight: 600;
+  font-size: var(--font-ui-medium);
+}
+
+.kanban-plugin__calendar-modes {
+  display: flex;
+  gap: 4px;
+}
+
+.kanban-plugin__calendar-mode-button {
+  padding: 4px 10px;
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-small);
+  border: 1px solid transparent;
+
+  &.is-active {
+    background-color: hsla(var(--interactive-accent-hsl), 0.15);
+    border-color: hsla(var(--interactive-accent-hsl), 0.7);
+  }
+}
+
+.kanban-plugin__calendar-body {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+.kanban-plugin__calendar-grid {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.kanban-plugin__calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  padding-block-end: 4px;
+}
+
+.kanban-plugin__calendar-weekday {
+  font-size: var(--font-ui-smaller);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.kanban-plugin__calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  flex-grow: 1;
+
+  &.is-month {
+    grid-auto-rows: minmax(96px, 1fr);
+  }
+
+  &.is-week {
+    grid-auto-rows: 1fr;
+  }
+}
+
+.kanban-plugin__calendar-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-primary);
+  min-height: 0;
+  overflow: hidden auto;
+
+  &.is-outside {
+    opacity: 0.45;
+    background-color: var(--background-secondary);
+  }
+
+  &.is-weekend .kanban-plugin__calendar-cell-date {
+    color: var(--text-faint);
+  }
+
+  &.is-today {
+    border-color: hsla(var(--interactive-accent-hsl), 0.8);
+    box-shadow: inset 0 0 0 1px hsla(var(--interactive-accent-hsl), 0.5);
+  }
+
+  &.is-selected {
+    background-color: hsla(var(--interactive-accent-hsl), 0.12);
+    border-color: hsla(var(--interactive-accent-hsl), 0.55);
+  }
+
+  &.is-selection-start,
+  &.is-selection-end {
+    background-color: hsla(var(--interactive-accent-hsl), 0.22);
+    border-color: hsla(var(--interactive-accent-hsl), 0.9);
+  }
+
+  &.is-selecting {
+    user-select: none;
+  }
+}
+
+.kanban-plugin__calendar-range-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  margin-block-end: 8px;
+  border-radius: var(--radius-s);
+  background-color: hsla(var(--interactive-accent-hsl), 0.12);
+  border: 1px solid hsla(var(--interactive-accent-hsl), 0.45);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-normal);
+  flex-shrink: 0;
+
+  .kanban-plugin__icon {
+    display: inline-flex;
+    color: var(--interactive-accent);
+  }
+
+  .kanban-plugin__calendar-range-hint-tip {
+    color: var(--text-muted);
+    margin-inline-start: auto;
+  }
+
+  .kanban-plugin__calendar-range-hint-clear {
+    cursor: pointer;
+    color: var(--text-muted);
+
+    &:hover {
+      color: var(--text-normal);
+    }
+  }
+}
+
+.kanban-plugin__calendar-cell-date {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: var(--font-ui-smaller);
+  font-weight: 600;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.kanban-plugin__calendar-today-label {
+  font-size: var(--font-ui-smallest);
+  font-weight: 600;
+  color: var(--interactive-accent);
+}
+
+.kanban-plugin__calendar-cell-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+}
+
+.kanban-plugin__calendar-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--font-ui-smaller);
+  padding: 4px 6px;
+  border-radius: var(--radius-s);
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  cursor: grab;
+  user-select: none;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+
+  &:hover {
+    border-color: var(--background-modifier-border-hover);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &.is-complete {
+    opacity: 0.6;
+
+    .kanban-plugin__calendar-item-title {
+      text-decoration: line-through;
+    }
+  }
+
+  &.is-range {
+    background-color: hsla(var(--interactive-accent-hsl), 0.1);
+    border-color: hsla(var(--interactive-accent-hsl), 0.35);
+    border-radius: 0;
+  }
+
+  &.is-range-start {
+    border-start-start-radius: var(--radius-s);
+    border-end-start-radius: var(--radius-s);
+    box-shadow: inset 3px 0 0 var(--interactive-accent);
+  }
+
+  &.is-range-end {
+    border-start-end-radius: var(--radius-s);
+    border-end-end-radius: var(--radius-s);
+  }
+
+  input[type='checkbox'] {
+    margin: 2px 0 0;
+  }
+}
+
+.kanban-plugin__calendar-range-arrow {
+  color: var(--interactive-accent);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.kanban-plugin__calendar-item-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.kanban-plugin__calendar-item-title {
+  flex-grow: 1;
+  overflow-wrap: anywhere;
+}
+
+.kanban-plugin__calendar-item-markdown {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+
+  p {
+    margin: 0;
+    display: inline;
+    line-height: inherit;
+  }
+
+  ul,
+  ol {
+    margin: 0;
+    padding-inline-start: 1.1em;
+  }
+
+  a {
+    -webkit-user-drag: none;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .markdown-embed {
+    display: none;
+  }
+}
+
+.kanban-plugin__calendar-unscheduled {
+  flex-shrink: 0;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border-radius: var(--radius-s);
+  border: 1px dashed var(--background-modifier-border);
+  background-color: var(--background-secondary);
+  align-self: flex-start;
+  max-height: 100%;
+  overflow: auto;
+}
+
+.kanban-plugin__calendar-unscheduled-title {
+  font-size: var(--font-ui-smaller);
+  font-weight: 600;
+  color: var(--text-muted);
+  user-select: none;
+}

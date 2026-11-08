@@ -207,18 +207,48 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
     const moveTaskData = stateManager.getSetting('move-task-metadata');
     const moveMetadata = stateManager.getSetting('inline-metadata-position') !== 'body';
 
-    if (moveTaskData || moveMetadata) {
+    // Kanban Plus: date-like task emoji fields (🛫 start, 📅 due, ✅ done, …) are
+    // always hidden from the rendered card body — they are shown as a dedicated
+    // deadline badge instead. The raw markdown keeps them untouched.
+    const hiddenDateTaskFields = new Set(['start', 'due', 'scheduled', 'completion']);
+
+    if (moveTaskData || moveMetadata || hiddenDateTaskFields.size) {
       let title = itemData.title;
       for (const item of [...inlineMetadata].reverse()) {
         const isTask = taskFields.has(item.key);
 
-        if (isTask && !moveTaskData) continue;
+        const shouldStripTask = moveTaskData || (isTask && hiddenDateTaskFields.has(item.key));
+
+        if (isTask && !shouldStripTask) continue;
         if (!isTask && !moveMetadata) continue;
 
         title = title.slice(0, item.start) + title.slice(item.end);
       }
 
       itemData.title = title;
+    }
+  }
+
+  // Kanban Plus: map task emoji fields to structured metadata (no Tasks plugin required)
+  if (inlineFields?.length) {
+    const taskValues = new Map<string, string>();
+    for (const f of inlineFields) {
+      if (taskFields.has(f.key) && !taskValues.has(f.key)) taskValues.set(f.key, f.value);
+    }
+
+    if (!itemData.metadata.dateStr) {
+      const due = taskValues.get('due') || taskValues.get('scheduled');
+      if (due) itemData.metadata.dateStr = due;
+    }
+
+    if (!itemData.metadata.startDateStr) {
+      const start = taskValues.get('start');
+      if (start) itemData.metadata.startDateStr = start;
+    }
+
+    if (!itemData.metadata.doneDateStr) {
+      const done = taskValues.get('completion');
+      if (done) itemData.metadata.doneDateStr = done;
     }
   }
 

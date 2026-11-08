@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" fill="none">
+  <defs>
+    <linearGradient id="calBg" x1="0" y1="0" x2="1200" y2="680" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1b1c20"/>
+      <stop offset="1" stop-color="#141518"/>
+    </linearGradient>
+    <style>
+      .t { font-family: Inter, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      .title { font-size: 17px; font-weight: 700; fill: #eef1f5; }
+      .nav { font-size: 13px; fill: #aab0b8; }
+      .chip { font-size: 12px; fill: #c9ced6; }
+      .wd { font-size: 11px; font-weight: 700; fill: #8b919a; letter-spacing: .04em; }
+      .day { font-size: 12px; font-weight: 700; fill: #9aa0a8; }
+      .dayToday { font-size: 12px; font-weight: 700; fill: #7aa7ff; }
+      .card { font-size: 11.5px; fill: #dfe3e8; }
+      .cardMuted { font-size: 11px; fill: #98a0aa; }
+      .link { font-size: 11.5px; fill: #8ab4f8; }
+      .period { font-size: 11px; font-weight: 600; fill: #26313f; }
+      .hint { font-size: 12px; fill: #dfe3e8; }
+      .hintMuted { font-size: 12px; fill: #9aa0a8; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="680" rx="14" fill="url(#calBg)"/>
+  <rect x="0.5" y="0.5" width="1199" height="679" rx="14" stroke="#2c2f36"/>
+
+  <!-- header -->
+  <text class="t title" x="36" y="42">Ноябрь 2026</text>
+  <g transform="translate(196 22)">
+    <rect width="28" height="26" rx="6" fill="#25282e" stroke="#3a3f48"/>
+    <path d="M18 8l-7 5 7 5" stroke="#aab0b8" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g transform="translate(230 22)">
+    <rect width="56" height="26" rx="6" fill="#25282e" stroke="#3a3f48"/>
+    <text class="t nav" x="14" y="18">Сегодня</text>
+  </g>
+  <g transform="translate(292 22)">
+    <rect width="28" height="26" rx="6" fill="#25282e" stroke="#3a3f48"/>
+    <path d="M10 8l7 5-7 5" stroke="#aab0b8" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g transform="translate(1008 22)">
+    <rect width="156" height="26" rx="7" fill="#25282e" stroke="#3a3f48"/>
+    <rect x="3" y="3" width="74" height="20" rx="5" fill="#2f3b52"/>
+    <text class="t nav" x="18" y="17">Месяц</text>
+    <text class="t nav" x="96" y="17">Неделя</text>
+  </g>
+
+  <!-- range hint -->
+  <rect x="36" y="64" width="1128" height="30" rx="7" fill="#1d2b44" stroke="#3b5b8f"/>
+  <path d="M52 74h16v10H52z" stroke="#8ab4f8" stroke-width="1.6" fill="none" rx="2"/>
+  <text class="t hint" x="78" y="84">Срок: 17 нояб. — 20 нояб.</text>
+  <text class="t hintMuted" x="930" y="84">Перетащите карточку сюда, чтобы задать срок</text>
+
+  <!-- weekdays -->
+  <g class="t wd">
+    <text x="36" y="112">ПН</text>
+    <text x="198" y="112">ВТ</text>
+    <text x="360" y="112">СР</text>
+    <text x="522" y="112">ЧТ</text>
+    <text x="684" y="112">ПТ</text>
+    <text x="846" y="112">СБ</text>
+    <text x="1008" y="112">ВС</text>
+  </g>
+
+  <!-- grid cells -->
+  <g fill="#202227" stroke="#31353d">
+    <rect x="36" y="120" width="156" height="98" rx="6"/>
+    <rect x="198" y="120" width="156" height="98" rx="6"/>
+    <rect x="360" y="120" width="156" height="98" rx="6"/>
+    <rect x="522" y="120" width="156" height="98" rx="6"/>
+    <rect x="684" y="120" width="156" height="98" rx="6"/>
+    <rect x="846" y="120" width="156" height="98" rx="6"/>
+    <rect x="1008" y="120" width="156" height="98" rx="6"/>
+
+    <rect x="36" y="224" width="156" height="98" rx="6"/>
+    <rect x="198" y="224" width="156" height="98" rx="6"/>
+    <rect x="360" y="224" width="156" height="98" rx="6"/>
+    <rect x="522" y="224" width="156" height="98" rx="6"/>
+    <rect x="684" y="224" width="156" height="98" rx="6"/>
+    <rect x="846" y="224" width="156" height="98" rx="6"/>
+    <rect x="1008" y="224" width="156" height="98" rx="6"/>
+
+    <rect x="36" y="328" width="156" height="98" rx="6"/>
+    <rect x="198" y="328" width="156" height="98" rx="6" fill="#223047" stroke="#4a6fa5"/>
+    <rect x="360" y="328" width="156" height="98" rx="6" fill="#223047" stroke="#4a6fa5"/>
+    <rect x="522" y="328" width="156" height="98" rx="6" fill="#223047" stroke="#4a6fa5"/>
+    <rect x="684" y="328" width="156" height="98" rx="6" fill="#223047" stroke="#4a6fa5"/>
+    <rect x="846" y="328" width="156" height="98" rx="6"/>
+    <rect x="1008" y="328" width="156" height="98" rx="6"/>
+
+    <rect x="36" y="432" width="156" height="98" rx="6"/>
+    <rect x="198" y="432" width="156" height="98" rx="6"/>
+    <rect x="360" y="432" width="156" height="98" rx="6"/>
+    <rect x="522" y="432" width="156" height="98" rx="6"/>
+    <rect x="684" y="432" width="156" height="98" rx="6"/>
+    <rect x="846" y="432" width="156" height="98" rx="6"/>
+    <rect x="1008" y="432" width="156" height="98" rx="6"/>
+
+    <rect x="36" y="536" width="156" height="98" rx="6" fill="#1a1c20" stroke="#2a2d34"/>
+    <rect x="198" y="536" width="156" height="98" rx="6" fill="#1a1c20" stroke="#2a2d34"/>
+    <rect x="360" y="536" width="156" height="98" rx="6" fill="#1a1c20" stroke="#2a2d34"/>
+    <rect x="522" y="536" width="156" height="98" rx="6" fill="#1a1c20" stroke="#2a2d34"/>
+    <rect x="684" y="536" width="156" height="98" rx="6" fill="#1a1c20" stroke="#2a2d34"/>
+    <rect x="846" y="536" width="156" height="98" rx="6" fill="#1a1c20" stroke="#2a2d34"/>
+    <rect x="1008" y="536" width="156" height="98" rx="6" fill="#1a1c20" stroke="#2a2d34"/>
+  </g>
+
+  <!-- day numbers -->
+  <g class="t day">
+    <text x="46" y="140">2</text><text x="208" y="140">3</text><text x="370" y="140">4</text>
+    <text x="532" y="140">5</text><text x="694" y="140">6</text><text x="856" y="140">7</text>
+    <text x="1018" y="140">8</text>
+
+    <text x="46" y="244">9</text><text x="208" y="244">10</text><text x="370" y="244">11</text>
+    <text x="532" y="244">12</text><text x="694" y="244">13</text><text x="856" y="244">14</text>
+    <text x="1018" y="244">15</text>
+
+    <text x="46" y="348">16</text><text x="208" y="348">17</text><text x="370" y="348">18</text>
+    <text x="532" y="348">19</text><text x="694" y="348">20</text><text x="856" y="348">21</text>
+    <text x="1018" y="348">22</text>
+
+    <text x="46" y="452">23</text><text x="208" y="452">24</text><text x="370" y="452">25</text>
+    <text x="532" y="452">26</text><text x="694" y="452">27</text><text x="856" y="452">28</text>
+    <text x="1018" y="452">29</text>
+
+    <text x="46" y="556">30</text><text x="208" y="556">1</text><text x="370" y="556">2</text>
+    <text x="532" y="556">3</text><text x="694" y="556">4</text><text x="856" y="556">5</text>
+    <text x="1018" y="556">6</text>
+  </g>
+  <text class="t dayToday" x="208" y="244">10 · сегодня</text>
+
+  <!-- small cards -->
+  <g>
+    <rect x="44" y="150" width="140" height="26" rx="5" fill="#2c3038" stroke="#3a3f48"/>
+    <text class="t card" x="54" y="167">Планёрка</text>
+
+    <rect x="206" y="150" width="140" height="26" rx="5" fill="#2c3038" stroke="#3a3f48"/>
+    <text class="t card" x="216" y="167">Макеты · #design</text>
+
+    <rect x="532" y="254" width="140" height="26" rx="5" fill="#2c3038" stroke="#3a3f48"/>
+    <text class="t card" x="542" y="271">Ревью PR</text>
+
+    <rect x="856" y="254" width="140" height="26" rx="5" fill="#2c3038" stroke="#3a3f48"/>
+    <text class="t link" x="866" y="271">[[Аня]] — созвон</text>
+
+    <rect x="370" y="462" width="140" height="26" rx="5" fill="#2c3038" stroke="#3a3f48"/>
+    <text class="t card" x="380" y="479">Релиз 2.1.0</text>
+
+    <rect x="44" y="566" width="140" height="26" rx="5" fill="#2c3038" stroke="#3a3f48"/>
+    <text class="t card" x="54" y="583">Ретро</text>
+  </g>
+
+  <!-- period bar Nov 5-8 -->
+  <g>
+    <rect x="528" y="188" width="156" height="24" fill="#7aa7ff"/>
+    <rect x="690" y="188" width="156" height="24" fill="#7aa7ff"/>
+    <rect x="852" y="188" width="156" height="24" fill="#7aa7ff"/>
+    <rect x="528" y="188" width="8" height="24" rx="4" fill="#7aa7ff"/>
+    <rect x="1014" y="188" width="152" height="24" rx="8" fill="#7aa7ff"/>
+    <text class="t period" x="542" y="204">Спринт · 5 — 8 нояб.</text>
+  </g>
+
+  <!-- selection highlight on 17-20 (cells are tinted above) -->
+</svg>

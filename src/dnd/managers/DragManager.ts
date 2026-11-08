@@ -19,6 +19,8 @@ export interface DragEventData {
   dragEntity?: Entity;
   dragEntityId?: string;
   dragEntityMargin?: Hitbox;
+  dragGrabOffset?: Coordinates;
+  dragOriginSize?: { width: number; height: number };
   dragOrigin?: Coordinates;
   dragOriginHitbox?: Hitbox;
   dragPosition?: Coordinates;
@@ -42,6 +44,8 @@ export class DragManager {
   dragEntity?: Entity;
   dragEntityId?: string;
   dragEntityMargin?: Hitbox;
+  dragGrabOffset?: Coordinates;
+  dragOriginSize?: { width: number; height: number };
   dragOrigin?: Coordinates;
   dragOriginHitbox?: Hitbox;
   dragPosition?: Coordinates;
@@ -69,6 +73,8 @@ export class DragManager {
       dragEntity: this.dragEntity,
       dragEntityId: this.dragEntityId,
       dragEntityMargin: this.dragEntityMargin,
+      dragGrabOffset: this.dragGrabOffset,
+      dragOriginSize: this.dragOriginSize,
       dragOrigin: this.dragOrigin,
       dragOriginHitbox: this.dragOriginHitbox,
       dragPosition: this.dragPosition,
@@ -77,19 +83,53 @@ export class DragManager {
     };
   }
 
+  /**
+   * Hitboxes are cached when entities mount (or resize). Re-measure them all
+   * right before a drag starts so the drag overlay and the drop targets match
+   * what is actually on screen (this also makes DnD correct under board zoom).
+   */
+  refreshHitboxes() {
+    this.hitboxEntities.forEach((entity) => {
+      try {
+        entity.recalcInitial();
+      } catch (e) {
+        /* ignore unmounted entities */
+      }
+    });
+    this.scrollEntities.forEach((entity) => {
+      try {
+        entity.recalcInitial();
+      } catch (e) {
+        /* ignore unmounted entities */
+      }
+    });
+  }
+
   dragStart(e: PointerEvent, referenceElement?: HTMLElement) {
-    const id =
-      referenceElement?.dataset.hitboxid || (e.currentTarget as HTMLElement).dataset.hitboxid;
+    const targetEl = referenceElement || (e.currentTarget as HTMLElement);
+    const id = referenceElement?.dataset.hitboxid || (e.currentTarget as HTMLElement).dataset.hitboxid;
 
     if (!id) return;
 
-    const styles = getComputedStyle(referenceElement || (e.currentTarget as HTMLElement));
+    const styles = getComputedStyle(targetEl);
+    const rect = targetEl.getBoundingClientRect();
+
+    // Re-measure everything first; positions may have changed since mount.
+    this.refreshHitboxes();
 
     this.dragEntityId = id;
     this.dragOrigin = { x: e.pageX, y: e.pageY };
     this.dragPosition = { x: e.pageX, y: e.pageY };
     this.dragEntity = this.hitboxEntities.get(id);
     this.dragOriginHitbox = this.dragEntity?.getHitbox();
+    this.dragGrabOffset = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+    this.dragOriginSize = {
+      width: rect.width,
+      height: rect.height,
+    };
     this.dragEntityMargin = [
       parseFloat(styles.marginLeft) || 0,
       parseFloat(styles.marginTop) || 0,
@@ -130,6 +170,8 @@ export class DragManager {
   dragEnd(e: PointerEvent) {
     this.emitter.emit('dragEnd', this.getDragEventData());
     this.dragEntityMargin = undefined;
+    this.dragGrabOffset = undefined;
+    this.dragOriginSize = undefined;
     this.dragEntity = undefined;
     this.dragEntityId = undefined;
     this.dragOrigin = undefined;
@@ -147,6 +189,8 @@ export class DragManager {
     }
 
     this.dragEntityMargin = undefined;
+    this.dragGrabOffset = undefined;
+    this.dragOriginSize = undefined;
     this.dragEntity = undefined;
     this.dragEntityId = undefined;
     this.dragOrigin = undefined;

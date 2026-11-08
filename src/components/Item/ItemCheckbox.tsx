@@ -1,4 +1,5 @@
 import update from 'immutability-helper';
+import { moment } from 'obsidian';
 import { memo, useCallback, useEffect, useState } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
@@ -8,6 +9,8 @@ import { BoardModifiers } from '../../helpers/boardModifiers';
 import { Icon } from '../Icon/Icon';
 import { c } from '../helpers';
 import { Item } from '../types';
+
+const doneDateRegEx = /(^|\s)✅\s*\S+/;
 
 interface ItemCheckboxProps {
   path: Path;
@@ -41,19 +44,36 @@ export const ItemCheckbox = memo(function ItemCheckbox({
 
       boardModifiers.replaceItem(path, replacements);
     } else {
-      boardModifiers.updateItem(
-        path,
-        update(item, {
-          data: {
-            checkChar: {
-              $apply: (v) => {
-                return v === ' ' ? getTaskStatusDone() : ' ';
-              },
-            },
-            $toggle: ['checked'],
+      // Kanban Plus: keep a done date (✅ YYYY-MM-DD) in the card text
+      const isCompleting = item.data.checkChar === ' ';
+      let titleRaw = item.data.titleRaw;
+
+      if (isCompleting) {
+        const doneDate = moment().format(stateManager.getSetting('date-format') as string);
+        const nlMatch = titleRaw.match(/\r?\n/);
+
+        if (nlMatch) {
+          const idx = titleRaw.indexOf(nlMatch[0]);
+          titleRaw = `${titleRaw.slice(0, idx)} ✅ ${doneDate}${titleRaw.slice(idx)}`;
+        } else {
+          titleRaw = `${titleRaw} ✅ ${doneDate}`;
+        }
+      } else {
+        titleRaw = titleRaw.replace(doneDateRegEx, '$1').replace(/ {2,}/g, ' ');
+      }
+
+      const base = update(item, {
+        data: {
+          checkChar: {
+            $set: isCompleting ? getTaskStatusDone() : ' ',
           },
-        })
-      );
+          checked: {
+            $set: isCompleting,
+          },
+        },
+      });
+
+      boardModifiers.updateItem(path, stateManager.updateItemContent(base, titleRaw));
     }
   }, [item, stateManager, boardModifiers, ...path]);
 

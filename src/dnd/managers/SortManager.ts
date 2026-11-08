@@ -75,6 +75,21 @@ export class SortManager {
     }
   }
 
+  /**
+   * Board zoom (CSS `zoom`) scales rendered sizes, but values written to
+   * `style.width` / `style.transform` are layout pixels. This returns the
+   * ratio between on-screen size and layout size so DnD geometry stays exact
+   * at any zoom level.
+   */
+  private getElementScale(el: HTMLElement): number {
+    const layoutWidth = el.offsetWidth;
+    if (!layoutWidth) return 1;
+    const screenWidth = el.getBoundingClientRect().width;
+    if (!screenWidth) return 1;
+    const scale = screenWidth / layoutWidth;
+    return scale > 0.01 && isFinite(scale) ? scale : 1;
+  }
+
   unregisterSortable(id: string) {
     this.sortables.delete(id);
   }
@@ -341,12 +356,12 @@ export class SortManager {
       const isHorizontal = this.axis === 'horizontal';
       const [, , measure] = this.placeholder;
 
+      // dimensions are screen px; convert back to layout px for the zoomed board
+      const scale = this.getElementScale(measure);
+      const size = (isHorizontal ? dimensions.width : dimensions.height) / scale;
+
       setStyle(measure, 'transition', transition);
-      setStyle(
-        measure,
-        isHorizontal ? 'width' : 'height',
-        `${isHorizontal ? dimensions.width : dimensions.height}px`
-      );
+      setStyle(measure, isHorizontal ? 'width' : 'height', `${size}px`);
 
       this.isPlaceholderActive = true;
     }
@@ -369,10 +384,12 @@ export class SortManager {
   }
 
   shiftEl(el: HTMLElement, transition: string, dimensions: { width: number; height: number }) {
+    // dimensions are screen px; convert back to layout px (board zoom)
+    const scale = this.getElementScale(el);
     const shift =
       this.axis === 'horizontal'
-        ? `translate3d(${dimensions.width}px, 0, 0)`
-        : `translate3d(0, ${dimensions.height}px, 0)`;
+        ? `translate3d(${dimensions.width / scale}px, 0, 0)`
+        : `translate3d(0, ${dimensions.height / scale}px, 0)`;
 
     setStyle(el, 'transition', transition);
     setStyle(el, 'transform', shift);

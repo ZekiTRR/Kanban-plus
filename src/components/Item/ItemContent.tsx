@@ -1,4 +1,5 @@
 import { EditorView } from '@codemirror/view';
+import classcat from 'classcat';
 import { memo } from 'preact/compat';
 import {
   Dispatch,
@@ -19,17 +20,49 @@ import {
   MarkdownClonedPreviewRenderer,
   MarkdownRenderer,
 } from '../MarkdownRenderer/MarkdownRenderer';
+import { Icon } from '../Icon/Icon';
 import { KanbanContext, SearchContext } from '../context';
 import { c, useGetDateColorFn, useGetTagColorFn } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
 import { InlineMetadata } from './InlineMetadata';
+import { openPeriodEditor } from './PeriodModal';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
   constructMenuTimePickerOnChange,
   constructTimePicker,
 } from './helpers';
+
+/** Kanban Plus: markdown-checkbox progress indicator on the card front. */
+export function ChecklistProgress({
+  item,
+  stateManager,
+}: {
+  item: Item;
+  stateManager: StateManager;
+}) {
+  const shouldShow = stateManager.useSetting('show-checklist-progress') !== false;
+  const checklist = item.data.metadata.checklist;
+
+  if (!shouldShow || !checklist || checklist.total === 0) {
+    return null;
+  }
+
+  const percent = Math.round((checklist.done / checklist.total) * 100);
+
+  return (
+    <span className={classcat([c('item-checklist'), { 'is-done': checklist.done === checklist.total }])}>
+      <Icon name="lucide-list-checks" />
+      <span>
+        {checklist.done}/{checklist.total}
+      </span>
+      <span className={c('item-checklist-bar')}>
+        <span className={c('item-checklist-bar-fill')} style={`width: ${percent}%`} />
+      </span>
+    </span>
+  );
+}
 
 export function useDatePickers(item: Item, explicitPath?: Path) {
   const { stateManager, boardModifiers } = useContext(KanbanContext);
@@ -218,14 +251,16 @@ export const ItemContent = memo(function ItemContent({
   const onWrapperClick = useCallback(
     (e: MouseEvent) => {
       if (e.targetNode.instanceOf(HTMLElement)) {
-        if (e.targetNode.hasClass(c('item-metadata-date'))) {
+        if (e.targetNode.closest(`.${c('item-metadata-period')}`)) {
+          openPeriodEditor(stateManager, boardModifiers, item, path);
+        } else if (e.targetNode.hasClass(c('item-metadata-date'))) {
           onEditDate(e);
         } else if (e.targetNode.hasClass(c('item-metadata-time'))) {
           onEditTime(e);
         }
       }
     },
-    [onEditDate, onEditTime]
+    [onEditDate, onEditTime, stateManager, boardModifiers, item, path]
   );
 
   const onSubmit = useCallback(() => setEditState(EditingState.complete), []);
@@ -303,6 +338,7 @@ export const ItemContent = memo(function ItemContent({
             getDateColor={getDateColor}
           />
           <InlineMetadata item={item} stateManager={stateManager} />
+          <ChecklistProgress item={item} stateManager={stateManager} />
           <Tags tags={item.data.metadata.tags} searchQuery={searchQuery} />
         </div>
       )}

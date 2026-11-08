@@ -15,6 +15,7 @@ import { useDragHandle } from 'src/dnd/managers/DragManager';
 import { frontmatterKey } from 'src/parsers/common';
 
 import { KanbanContext, SearchContext } from '../context';
+import { itemColorToCssVars } from '../colors';
 import { c } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
 import { ItemCheckbox } from './ItemCheckbox';
@@ -141,10 +142,21 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
   const elementRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const search = useContext(SearchContext);
+  const { stateManager } = useContext(KanbanContext);
 
   const { itemIndex, ...innerProps } = props;
 
   const bindHandle = useDragHandle(measureRef, measureRef);
+
+  const showItemColors = stateManager.useSetting('show-item-colors');
+  const itemColorStyle = stateManager.useSetting('item-color-style') || 'strip';
+  const itemStyles = stateManager.useSetting('item-styles');
+  const blockId = innerProps.item.data.blockId;
+  const itemColor = showItemColors !== false && blockId ? itemStyles?.[blockId]?.color : undefined;
+  const itemColorVars = useMemo(
+    () => itemColorToCssVars(itemColor, itemColorStyle),
+    [itemColor, itemColorStyle]
+  );
 
   const isMatch = search?.query ? innerProps.item.data.titleSearch.includes(search.query) : false;
   const classModifiers: string[] = getItemClassModifiers(innerProps.item);
@@ -157,7 +169,20 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
       }}
       className={c('item-wrapper')}
     >
-      <div ref={elementRef} className={classcat([c('item'), ...classModifiers])}>
+      <div
+        ref={elementRef}
+        className={classcat([
+          c('item'),
+          ...classModifiers,
+          {
+            'has-item-color': !!itemColor,
+            'item-color-full': !!itemColor && itemColorStyle === 'full',
+            'item-color-strip': !!itemColor && itemColorStyle !== 'full',
+            'kp-pop-in': !!innerProps.item.data.justAdded,
+          },
+        ])}
+        style={itemColorVars}
+      >
         {props.isStatic ? (
           <ItemInner
             {...innerProps}
@@ -195,7 +220,7 @@ export const Items = memo(function Items({ isStatic, items, shouldMarkItemsCompl
   return (
     <>
       {items.map((item, i) => {
-        return search?.query && !search.items.has(item) ? null : (
+        return search?.isFiltering && !search.items.has(item) ? null : (
           <DraggableItem
             key={boardView + item.id}
             item={item}

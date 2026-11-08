@@ -273,15 +273,21 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   getViewState<K extends keyof KanbanViewSettings>(key: K) {
-    const stateManager = this.plugin.stateManagers.get(this.file);
-    const settingVal = stateManager.getSetting(key);
-    return this.viewSettings[key] ?? settingVal;
+    if ((key as string) === 'zoom') {
+      return ((this.viewSettings as any).zoom ?? 1) as any;
+    }
+    const stateManager = this.plugin.getStateManager(this.file);
+    const settingVal = (stateManager as any).getSetting(key);
+    return (this.viewSettings[key] ?? settingVal) as any;
   }
 
   useViewState<K extends keyof KanbanViewSettings>(key: K) {
-    const stateManager = this.plugin.stateManagers.get(this.file);
-    const settingVal = stateManager.useSetting(key);
-    return this.viewSettings[key] ?? settingVal;
+    if ((key as string) === 'zoom') {
+      return ((this.viewSettings as any).zoom ?? 1) as any;
+    }
+    const stateManager = this.plugin.getStateManager(this.file);
+    const settingVal = (stateManager as any).useSetting(key);
+    return (this.viewSettings[key] ?? settingVal) as any;
   }
 
   getPortal() {
@@ -402,6 +408,13 @@ export class KanbanView extends TextFileView implements HoverParent {
                 .setIcon('lucide-table')
                 .setChecked(view === 'table')
                 .onClick(() => this.setView('table'))
+            )
+            .addItem((item) =>
+              item
+                .setTitle(t('View as calendar'))
+                .setIcon('lucide-calendar-days')
+                .setChecked(view === 'calendar')
+                .onClick(() => this.setView('calendar'))
             )
             .addItem((item) =>
               item

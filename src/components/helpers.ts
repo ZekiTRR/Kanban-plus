@@ -12,12 +12,21 @@ import {
   toggleTask,
 } from 'src/parsers/helpers/inlineMetadata';
 
-import { SearchContextProps } from './context';
+import { DateFilter, SearchContextProps } from './context';
 import { Board, DataKey, DateColor, Item, Lane, PageData, TagColor } from './types';
 
 export const baseClassName = 'kanban-plugin';
 
 export function noop() {}
+
+export const MIN_ZOOM = 0.4;
+export const MAX_ZOOM = 2.0;
+
+export function clampZoom(z: number): number {
+  const v = Math.round(z * 100) / 100;
+  if (!isFinite(v) || v <= 0) return 1;
+  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v));
+}
 
 const classCache = new Map<string, string>();
 export function c(className: string) {
@@ -359,22 +368,72 @@ export function useSearchValue(
   query: string,
   setSearchQuery: Dispatch<StateUpdater<string>>,
   setDebouncedSearchQuery: Dispatch<StateUpdater<string>>,
-  setIsSearching: Dispatch<StateUpdater<boolean>>
+  setIsSearching: Dispatch<StateUpdater<boolean>>,
+  tagFilter: Set<string>,
+  setTagFilter: Dispatch<StateUpdater<Set<string>>>,
+  dateFilter: DateFilter | null,
+  setDateFilter: Dispatch<StateUpdater<DateFilter | null>>
 ) {
   return useMemo<SearchContextProps>(() => {
     query = query.trim().toLocaleLowerCase();
 
     const lanes = new Set<Lane>();
     const items = new Set<Item>();
+    const isFiltering = !!query || tagFilter.size > 0 || !!dateFilter;
 
-    if (query) {
+    if (isFiltering) {
+      const startOfToday = moment().startOf('day');
+      const endOfWindow = moment(startOfToday).add(dateFilter === 'week' ? 7 : 0, 'days');
+
       board.children.forEach((lane) => {
         let laneMatched = false;
         lane.children.forEach((item) => {
-          if (item.data.titleSearch.includes(query)) {
-            laneMatched = true;
-            items.add(item);
+          if (query && !item.data.titleSearch.includes(query)) {
+            return;
           }
+
+          if (tagFilter.size > 0) {
+            const itemTags = item.data.metadata.tags || [];
+            for (const tag of tagFilter) {
+              if (!itemTags.includes(tag)) {
+                return;
+              }
+            }
+          }
+
+          if (dateFilter) {
+            const dueDate = item.data.metadata.date;
+            const startDate = item.data.metadata.startDate;
+            const periodStart = startDate || dueDate;
+            const periodEnd = dueDate || startDate;
+            const isDone = item.data.checked;
+
+            switch (dateFilter) {
+              case 'overdue':
+                if (!periodEnd || isDone || !periodEnd.isBefore(startOfToday, 'day')) return;
+                break;
+              case 'today':
+                if (
+                  !periodStart ||
+                  !periodEnd ||
+                  !startOfToday.isBetween(periodStart, periodEnd, 'day', '[]')
+                )
+                  return;
+                break;
+              case 'week':
+                if (
+                  !periodStart ||
+                  !periodEnd ||
+                  periodEnd.isBefore(startOfToday, 'day') ||
+                  periodStart.isAfter(endOfWindow, 'day')
+                )
+                  return;
+                break;
+            }
+          }
+
+          laneMatched = true;
+          items.add(item);
         });
         if (laneMatched) lanes.add(lane);
       });
@@ -384,6 +443,9 @@ export function useSearchValue(
       lanes,
       items,
       query,
+      tagFilter,
+      dateFilter,
+      isFiltering,
       search: (query, immediate) => {
         if (!query) {
           setIsSearching(false);
@@ -398,6 +460,8 @@ export function useSearchValue(
           setSearchQuery(query);
         }
       },
+      setTagFilter,
+      setDateFilter,
     };
-  }, [board, query, setSearchQuery, setDebouncedSearchQuery]);
+  }, [board, query, tagFilter, dateFilter, setSearchQuery, setDebouncedSearchQuery]);
 }

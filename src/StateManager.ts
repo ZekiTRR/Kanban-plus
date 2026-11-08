@@ -258,6 +258,19 @@ export class StateManager {
       'tag-sort': this.getSettingRaw('tag-sort', suppliedSettings) ?? [],
       'date-colors': this.getSettingRaw('date-colors', suppliedSettings) ?? [],
       'tag-action': this.getSettingRaw('tag-action', suppliedSettings) ?? 'obsidian',
+      // Kanban Plus defaults (undefined means "on" unless noted)
+      'show-lane-colors': this.getSettingRaw('show-lane-colors', suppliedSettings) ?? true,
+      'lane-color-body': this.getSettingRaw('lane-color-body', suppliedSettings) ?? true,
+      'show-item-colors': this.getSettingRaw('show-item-colors', suppliedSettings) ?? true,
+      'item-color-style': this.getSettingRaw('item-color-style', suppliedSettings) ?? 'strip',
+      'show-filters-bar': this.getSettingRaw('show-filters-bar', suppliedSettings) ?? true,
+      'show-checklist-progress':
+        this.getSettingRaw('show-checklist-progress', suppliedSettings) ?? true,
+      'enable-animations': this.getSettingRaw('enable-animations', suppliedSettings) ?? true,
+      'enable-free-lanes': this.getSettingRaw('enable-free-lanes', suppliedSettings) ?? false,
+      'enable-zoom': this.getSettingRaw('enable-zoom', suppliedSettings) ?? true,
+      'lane-styles': this.getSettingRaw('lane-styles', suppliedSettings),
+      'item-styles': this.getSettingRaw('item-styles', suppliedSettings),
     };
   }
 

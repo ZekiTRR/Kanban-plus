@@ -4,8 +4,10 @@ import { JSX, useMemo } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
 import { t } from 'src/lang/helpers';
 
+import { Icon } from '../Icon/Icon';
 import { c } from '../helpers';
 import { DateColor, Item } from '../types';
+import { getItemPeriod } from './period';
 
 export function getRelativeDate(date: moment.Moment, time: moment.Moment) {
   if (time) {
@@ -69,11 +71,31 @@ export function DateAndTime({
   const dateDisplayFormat = stateManager.useSetting('date-display-format');
   const shouldLinkDate = stateManager.useSetting('link-date-to-daily-note');
 
-  const targetDate = item.data.metadata.time ?? item.data.metadata.date;
+  const startDate = item.data.metadata.startDate;
+  const dueDate = item.data.metadata.date;
+  const period = useMemo(() => getItemPeriod(item), [item]);
+
+  const targetDate = item.data.metadata.time ?? dueDate ?? startDate;
   const dateColor = useMemo(() => {
     if (!targetDate) return null;
     return getDateColor(targetDate);
   }, [targetDate, getDateColor]);
+
+  // Kanban Plus: semantic due-badge state (custom date-colors rules take precedence)
+  const dueState = useMemo(() => {
+    if (item.data.checked) return 'is-complete';
+
+    const today = moment().startOf('day');
+    const start = item.data.metadata.startDate;
+    const due = item.data.metadata.date;
+
+    if (due && due.isBefore(today, 'day')) return 'is-overdue';
+    if (due && due.isSame(today, 'day')) return 'is-today';
+    if (start && due && today.isBetween(start, due, 'day', '[]')) return 'is-in-progress';
+    if (start && !due && start.isSame(today, 'day')) return 'is-today';
+
+    return null;
+  }, [item]);
 
   if (!moveDates || !targetDate) return null;
 
@@ -81,8 +103,11 @@ export function DateAndTime({
 
   if (!dateStr) return null;
 
-  const hasDate = !!item.data.metadata.date;
+  const hasDate = !!dueDate;
+  const hasStart = !!startDate;
   const hasTime = !!item.data.metadata.time;
+  const isPeriod = period.isRange;
+
   const dateDisplayStr = targetDate.format(dateDisplayFormat);
   const timeDisplayStr = !hasTime ? null : targetDate.format(timeFormat);
 
@@ -112,6 +137,40 @@ export function DateAndTime({
     dateProps.onClick = onEditDate;
   }
 
+  // Kanban Plus: a card with both dates shows its deadline span at a glance.
+  if (isPeriod && period.start && period.end) {
+    const startStr = period.start.format(dateDisplayFormat);
+    const endStr = period.end.format(dateDisplayFormat);
+
+    return (
+      <span
+        style={
+          dateColor && {
+            '--date-color': dateColor.color,
+            '--date-background-color': dateColor.backgroundColor,
+          }
+        }
+        className={classcat([
+          c('item-metadata-date-wrapper'),
+          c('item-metadata-period'),
+          c('date'),
+          {
+            'has-background': !!dateColor?.backgroundColor,
+            [dueState]: !!dueState,
+            'is-complete': !!item.data.checked,
+          },
+        ])}
+        title={t('Click to edit the period')}
+      >
+        {dueState === 'is-overdue' && <Icon name="lucide-alarm-clock" />}
+        <Icon name="lucide-calendar-range" className={c('period-icon')} />
+        <span className={c('period-start')}>{startStr}</span>
+        <span className={c('period-sep')}>–</span>
+        <span className={c('period-end')}>{endStr}</span>
+      </span>
+    );
+  }
+
   return (
     <span
       style={
@@ -125,11 +184,21 @@ export function DateAndTime({
         c('date'),
         {
           'has-background': !!dateColor?.backgroundColor,
+          [dueState]: !!dueState,
+          'is-complete': !!item.data.checked && hasDate,
+          'is-period-start': hasStart && !hasDate,
         },
       ])}
     >
+      {hasStart && !hasDate && <Icon name="lucide-calendar-clock" className={c('period-icon')} />}
+      {hasStart && !hasDate && (
+        <span className={c('item-metadata-date')}>
+          {startDate.format(dateDisplayFormat)}
+        </span>
+      )}
       {hasDate && (
         <>
+          {dueState === 'is-overdue' && <Icon name="lucide-alarm-clock" />}
           <span
             {...dateProps}
             className={`${c('item-metadata-date')} ${!shouldLinkDate ? 'is-button' : ''}`}

@@ -6,6 +6,11 @@ import { KanbanView } from './KanbanView';
 import { DraggableItem } from './components/Item/Item';
 import { DraggableLane } from './components/Lane/Lane';
 import { KanbanContext } from './components/context';
+import {
+  laneStylesAfterInsertLane,
+  laneStylesAfterMoveLane,
+  laneStylesAfterRemoveLane,
+} from './components/colors';
 import { c, maybeCompleteForMove } from './components/helpers';
 import { Board, DataTypes, Item, Lane } from './components/types';
 import { DndContext } from './dnd/components/DndContext';
@@ -81,7 +86,15 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
             });
           });
 
-          return stateManager.setState((board) => insertEntity(board, dropPath, items));
+          return stateManager.setState((board) =>
+            insertEntity(
+              board,
+              dropPath,
+              items.map((item) =>
+                update(item, { data: { justAdded: { $set: true } } })
+              )
+            )
+          );
         } catch (e) {
           stateManager.setError(e);
           console.error(e);
@@ -161,9 +174,13 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
 
             view.setViewState('list-collapse', undefined, op);
 
-            return update<Board>(newBoard, {
-              data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
-            });
+            return laneStylesAfterMoveLane(
+              update<Board>(newBoard, {
+                data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
+              }),
+              from,
+              to
+            );
           }
 
           // Remove sorting in the destination lane
@@ -231,9 +248,12 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
 
             destinationView.setViewState('list-collapse', undefined, op);
 
-            return update<Board>(insertEntity(destinationBoard, dropPath, toInsert), {
-              data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
-            });
+            return laneStylesAfterInsertLane(
+              update<Board>(insertEntity(destinationBoard, dropPath, toInsert), {
+                data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
+              }),
+              dropPath.last()
+            );
           } else {
             return insertEntity(destinationBoard, dropPath, toInsert);
           }
@@ -248,9 +268,12 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
           };
           sourceView.setViewState('list-collapse', undefined, op);
 
-          return update<Board>(removeEntity(sourceBoard, dragPath), {
-            data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
-          });
+          return laneStylesAfterRemoveLane(
+            update<Board>(removeEntity(sourceBoard, dragPath), {
+              data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
+            }),
+            dragPath.last()
+          );
         } else {
           return removeEntity(sourceBoard, dragPath, replacementEntity);
         }
@@ -263,7 +286,19 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
     return (
       <DndContext win={win} onDrop={handleDrop}>
         {...portals}
-        <DragOverlay>
+        <DragOverlay
+          animationsEnabled={(entity) => {
+            try {
+              const data = entity.getData();
+              const view = plugin.getKanbanView(entity.scopeId, data.win);
+              const stateManager = plugin.stateManagers.get(view.file);
+
+              return stateManager?.getSetting('enable-animations') !== false;
+            } catch (e) {
+              return false;
+            }
+          }}
+        >
           {(entity, styles) => {
             const [data, context] = useMemo(() => {
               if (entity.scopeId === 'htmldnd') {

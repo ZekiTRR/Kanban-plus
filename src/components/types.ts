@@ -22,6 +22,20 @@ export interface LaneData {
   sorted?: LaneSort | string;
 }
 
+export interface LaneStyle {
+  color?: string;
+  pos?: { x: number; y: number };
+}
+
+export interface ItemStyle {
+  color?: string;
+}
+
+export interface ChecklistProgress {
+  done: number;
+  total: number;
+}
+
 export interface DataKey {
   metadataKey: string;
   label: string;
@@ -69,6 +83,11 @@ export interface ItemMetadata {
   date?: moment.Moment;
   timeStr?: string;
   time?: moment.Moment;
+  startDateStr?: string;
+  startDate?: moment.Moment;
+  doneDateStr?: string;
+  doneDate?: moment.Moment;
+  checklist?: ChecklistProgress;
   tags?: string[];
   fileAccessor?: FileAccessor;
   file?: TFile | null;
@@ -87,6 +106,7 @@ export interface ItemData {
   titleSearchRaw: string;
   metadata: ItemMetadata;
   forceEditMode?: boolean;
+  justAdded?: boolean;
 }
 
 export interface ErrorReport {
@@ -109,6 +129,7 @@ export type MetadataSetting = Nestable<DataKey>;
 export type TagColorSetting = Nestable<TagColor>;
 export type TagSortSetting = Nestable<TagSort>;
 export type DateColorSetting = Nestable<DateColor>;
+export type LaneStyleMap = Record<number, LaneStyle>;
 
 export const DataTypes = {
   Item: 'item',

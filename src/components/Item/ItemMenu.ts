@@ -7,14 +7,17 @@ import { moveEntity } from 'src/dnd/util/data';
 import { t } from 'src/lang/helpers';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
+import { addColorMenu, setItemColor } from '../colors';
 import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
 import { EditState, Item } from '../types';
+import { openPeriodEditor } from './PeriodModal';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
   constructMenuTimePickerOnChange,
   constructTimePicker,
 } from './helpers';
+import { setItemDates } from './period';
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
 const embedRegEx = /!?\[\[([^\]]*)\.[^\]]+\]\]/g;
@@ -22,6 +25,8 @@ const wikilinkRegEx = /!?\[\[([^\]]*)\]\]/g;
 const mdLinkRegEx = /!?\[([^\]]*)\]\([^)]*\)/g;
 const tagRegEx = /#([^\u2000-\u206F\u2E00-\u2E7F'!"#$%&()*+,.:;<=>?@^`{|}~[\]\\\s\n\r]+)/g;
 const condenceWhiteSpaceRE = /\s+/g;
+
+const escapeTagForRegExp = (tag: string) => tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 interface UseItemMenuParams {
   setEditState: Dispatch<StateUpdater<EditState>>;
@@ -43,11 +48,41 @@ export function useItemMenu({
       const coordinates = { x: e.clientX, y: e.clientY };
       const hasDate = !!item.data.metadata.date;
       const hasTime = !!item.data.metadata.time;
+      const hasStart = !!item.data.metadata.startDate;
+      const itemStyles = stateManager.getSetting('item-styles');
+      const currentColor = item.data.blockId ? itemStyles?.[item.data.blockId]?.color : undefined;
+
+      const ensureBlockId = () => {
+        if (item.data.blockId) return item;
+
+        const id = generateInstanceId(6);
+        const withId = update(item, { data: { blockId: { $set: id } } });
+
+        boardModifiers.updateItem(
+          path,
+          stateManager.updateItemContent(withId, withId.data.titleRaw)
+        );
+
+        return withId;
+      };
 
       const menu = new Menu().addItem((i) => {
         i.setIcon('lucide-edit')
           .setTitle(t('Edit card'))
           .onClick(() => setEditState(coordinates));
+      });
+
+      addColorMenu(menu, {
+        currentColor,
+        onPick: (color) => {
+          const withId = ensureBlockId();
+          setItemColor(stateManager, withId.data.blockId as string, color);
+        },
+        onClear: () => {
+          if (item.data.blockId) {
+            setItemColor(stateManager, item.data.blockId, null);
+          }
+        },
       });
 
       menu
@@ -140,6 +175,17 @@ export function useItemMenu({
             });
         });
       }
+
+      menu.addItem((i) => {
+        i.setIcon('lucide-list-checks')
+          .setTitle(t('Add checklist'))
+          .onClick(() => {
+            boardModifiers.updateItem(
+              path,
+              stateManager.updateItemContent(item, `${item.data.titleRaw}\n- [ ] `)
+            );
+          });
+      });
 
       menu
         .addItem((i) => {
@@ -263,7 +309,72 @@ export function useItemMenu({
         }
       }
 
+      // Kanban Plus: a deadline period (start → due) lives in the same menu.
+      menu.addItem((i) => {
+        i.setIcon('lucide-calendar-range')
+          .setTitle(t('Set period'))
+          .onClick(() => openPeriodEditor(stateManager, boardModifiers, item, path));
+      });
+
+      if (hasStart || hasDate) {
+        menu.addItem((i) => {
+          i.setIcon('lucide-calendar-x')
+            .setTitle(t('Clear period'))
+            .onClick(() =>
+              setItemDates({
+                stateManager,
+                boardModifiers,
+                path,
+                item,
+                start: null,
+                due: null,
+              })
+            );
+        });
+      }
+
       menu.addSeparator();
+
+      const boardTags = new Set<string>();
+      stateManager.state.children.forEach((lane) =>
+        lane.children.forEach((i) => i.data.metadata.tags?.forEach((tag) => boardTags.add(tag)))
+      );
+
+      if (boardTags.size) {
+        const itemTags = item.data.metadata.tags || [];
+
+        const addTagOptions = (tagMenu: Menu) => {
+          boardTags.forEach((tag) => {
+            tagMenu.addItem((mi) => {
+              mi.setTitle(tag).setChecked(itemTags.includes(tag)).onClick(() => {
+                let newTitleRaw: string;
+
+                if (itemTags.includes(tag)) {
+                  const re = new RegExp(`(^|\\s)${escapeTagForRegExp(tag)}(?=\\s|$)`);
+                  newTitleRaw = item.data.titleRaw.replace(re, '').replace(/ {2,}/g, ' ').trim();
+                } else {
+                  newTitleRaw = `${item.data.titleRaw} ${tag}`;
+                }
+
+                boardModifiers.updateItem(
+                  path,
+                  stateManager.updateItemContent(item, newTitleRaw)
+                );
+              });
+            });
+          });
+        };
+
+        if (Platform.isPhone) {
+          addTagOptions(menu);
+        } else {
+          menu.addItem((mi) => {
+            const submenu = (mi as any).setTitle(t('Tags')).setIcon('lucide-tag').setSubmenu();
+
+            addTagOptions(submenu);
+          });
+        }
+      }
 
       const addMoveToOptions = (menu: Menu) => {
         const lanes = stateManager.state.children;

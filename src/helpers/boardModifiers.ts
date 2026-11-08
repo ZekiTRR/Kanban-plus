@@ -15,6 +15,12 @@ import {
 } from 'src/dnd/util/data';
 
 import { generateInstanceId } from '../components/helpers';
+import {
+  laneStylesAfterAppendLane,
+  laneStylesAfterDuplicateLane,
+  laneStylesAfterInsertLane,
+  laneStylesAfterRemoveLane,
+} from '../components/colors';
 import { Board, DataTypes, Item, Lane } from '../components/types';
 
 export interface BoardModifiers {
@@ -37,6 +43,17 @@ export interface BoardModifiers {
 }
 
 export function getBoardModifiers(view: KanbanView, stateManager: StateManager): BoardModifiers {
+  const markJustAdded = (items: Item[]): Item[] =>
+    items.map((item) =>
+      update(item, {
+        data: {
+          justAdded: {
+            $set: true,
+          },
+        },
+      })
+    );
+
   const appendArchiveDate = (item: Item) => {
     const archiveDateFormat = stateManager.getSetting('archive-date-format');
     const archiveDateSeparator = stateManager.getSetting('archive-date-separator');
@@ -56,15 +73,15 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
 
   return {
     appendItems: (path: Path, items: Item[]) => {
-      stateManager.setState((boardData) => appendEntities(boardData, path, items));
+      stateManager.setState((boardData) => appendEntities(boardData, path, markJustAdded(items)));
     },
 
     prependItems: (path: Path, items: Item[]) => {
-      stateManager.setState((boardData) => prependEntities(boardData, path, items));
+      stateManager.setState((boardData) => prependEntities(boardData, path, markJustAdded(items)));
     },
 
     insertItems: (path: Path, items: Item[]) => {
-      stateManager.setState((boardData) => insertEntity(boardData, path, items));
+      stateManager.setState((boardData) => insertEntity(boardData, path, markJustAdded(items)));
     },
 
     replaceItem: (path: Path, items: Item[]) => {
@@ -75,7 +92,7 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
 
     splitItem: (path: Path, items: Item[]) => {
       stateManager.setState((boardData) => {
-        return insertEntity(removeEntity(boardData, path), path, items);
+        return insertEntity(removeEntity(boardData, path), path, markJustAdded(items));
       });
     },
 
@@ -101,9 +118,11 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
         };
 
         view.setViewState('list-collapse', undefined, op);
-        return update<Board>(appendEntities(boardData, [], [lane]), {
-          data: { settings: { 'list-collapse': { $set: op(collapseState) } } },
-        });
+        return laneStylesAfterAppendLane(
+          update<Board>(appendEntities(boardData, [], [lane]), {
+            data: { settings: { 'list-collapse': { $set: op(collapseState) } } },
+          })
+        );
       });
     },
 
@@ -118,9 +137,12 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
 
         view.setViewState('list-collapse', undefined, op);
 
-        return update<Board>(insertEntity(boardData, path, [lane]), {
-          data: { settings: { 'list-collapse': { $set: op(collapseState) } } },
-        });
+        return laneStylesAfterInsertLane(
+          update<Board>(insertEntity(boardData, path, [lane]), {
+            data: { settings: { 'list-collapse': { $set: op(collapseState) } } },
+          }),
+          path.last()
+        );
       });
     },
 
@@ -150,16 +172,19 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
           };
           view.setViewState('list-collapse', undefined, op);
 
-          return update<Board>(removeEntity(boardData, path), {
-            data: {
-              settings: { 'list-collapse': { $set: op(collapseState) } },
-              archive: {
-                $unshift: stateManager.getSetting('archive-with-date')
-                  ? items.map(appendArchiveDate)
-                  : items,
+          return laneStylesAfterRemoveLane(
+            update<Board>(removeEntity(boardData, path), {
+              data: {
+                settings: { 'list-collapse': { $set: op(collapseState) } },
+                archive: {
+                  $unshift: stateManager.getSetting('archive-with-date')
+                    ? items.map(appendArchiveDate)
+                    : items,
+                },
               },
-            },
-          });
+            }),
+            path.last()
+          );
         } catch (e) {
           stateManager.setError(e);
           return boardData;
@@ -209,9 +234,12 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
           };
           view.setViewState('list-collapse', undefined, op);
 
-          return update<Board>(removeEntity(boardData, path), {
-            data: { settings: { 'list-collapse': { $set: op(collapseState) } } },
-          });
+          return laneStylesAfterRemoveLane(
+            update<Board>(removeEntity(boardData, path), {
+              data: { settings: { 'list-collapse': { $set: op(collapseState) } } },
+            }),
+            path.last()
+          );
         }
 
         return removeEntity(boardData, path);
@@ -268,12 +296,23 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
           };
           view.setViewState('list-collapse', undefined, op);
 
-          return update<Board>(insertEntity(boardData, path, [entityWithNewID]), {
-            data: { settings: { 'list-collapse': { $set: op(collapseState) } } },
-          });
+          return laneStylesAfterDuplicateLane(
+            update<Board>(insertEntity(boardData, path, [entityWithNewID]), {
+              data: { settings: { 'list-collapse': { $set: op(collapseState) } } },
+            }),
+            path.last()
+          );
         }
 
-        return insertEntity(boardData, path, [entityWithNewID]);
+        return insertEntity(boardData, path, [
+          update(entityWithNewID, {
+            data: {
+              justAdded: {
+                $set: true,
+              },
+            },
+          }),
+        ]);
       });
     },
   };

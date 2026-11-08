@@ -396,7 +396,11 @@ function extractSpecialTaskFields(line: string): InlineField[] {
     if (key === 'priority') value = iconToPriority(value);
     else if (key === 'repeat') {
       const originalLen = value.length;
-      value = RRule.fromText(value).toText();
+      try {
+        value = RRule.fromText(value).toText();
+      } catch (e) {
+        // leave the raw recurrence text in place if it can't be normalized
+      }
       end -= originalLen - value.length;
     }
 
@@ -418,7 +422,6 @@ export function extractInlineFields(
   includeTaskFields: boolean = false
 ): InlineField[] | null {
   const dv = getDataviewPlugin();
-  const tasks = getTasksPlugin();
 
   let fields: InlineField[] = [];
   if (dv) {
@@ -437,7 +440,8 @@ export function extractInlineFields(
     }
   }
 
-  if (tasks && includeTaskFields) fields = fields.concat(extractSpecialTaskFields(line));
+  // Kanban Plus: task emoji fields are always parsed, no Tasks plugin required
+  if (includeTaskFields) fields = fields.concat(extractSpecialTaskFields(line));
 
   fields.sort((a, b) => a.start - b.start);
 

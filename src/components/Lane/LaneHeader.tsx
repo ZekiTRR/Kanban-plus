@@ -20,6 +20,10 @@ interface LaneHeaderProps {
   lane: Lane;
   laneIndex: number;
   bindHandle: (el: HTMLElement) => void;
+  onGripPointerDown?: (e: PointerEvent) => void;
+  isFloating?: boolean;
+  onMagnet?: () => void;
+  getDetachPos?: () => { x: number; y: number } | null;
   setIsItemInputVisible?: Dispatch<StateUpdater<EditState>>;
   isCollapsed: boolean;
   toggleIsCollapsed: () => void;
@@ -30,6 +34,8 @@ interface LaneButtonProps {
   editState: EditState;
   setEditState: Dispatch<StateUpdater<EditState>>;
   setIsItemInputVisible?: Dispatch<StateUpdater<EditState>>;
+  isFloating?: boolean;
+  onMagnet?: () => void;
 }
 
 function LaneButtons({
@@ -37,6 +43,8 @@ function LaneButtons({
   editState,
   setEditState,
   setIsItemInputVisible,
+  isFloating,
+  onMagnet,
 }: LaneButtonProps) {
   const { stateManager } = useContext(KanbanContext);
   return (
@@ -65,6 +73,15 @@ function LaneButtons({
               <Icon name="lucide-plus-circle" />
             </a>
           )}
+          {isFloating && onMagnet && (
+            <a
+              aria-label={t('Snap lane back')}
+              className={`${c('lane-settings-button')} clickable-icon`}
+              onClick={onMagnet}
+            >
+              <Icon name="lucide-magnet" />
+            </a>
+          )}
           <a
             aria-label={t('More options')}
             className={`${c('lane-settings-button')} clickable-icon`}
@@ -84,6 +101,10 @@ export const LaneHeader = memo(function LaneHeader({
   lane,
   laneIndex,
   bindHandle,
+  onGripPointerDown,
+  isFloating,
+  onMagnet,
+  getDetachPos,
   setIsItemInputVisible,
   isCollapsed,
   toggleIsCollapsed,
@@ -96,6 +117,9 @@ export const LaneHeader = memo(function LaneHeader({
     setEditState,
     path: lanePath,
     lane,
+    isFloating,
+    onMagnet,
+    getDetachPos,
   });
 
   useEffect(() => {
@@ -134,7 +158,12 @@ export const LaneHeader = memo(function LaneHeader({
         onDblClick={onDoubleClick}
         className={c('lane-header-wrapper')}
       >
-        <div className={c('lane-grip')} ref={bindHandle}>
+        <div
+          className={c('lane-grip')}
+          ref={bindHandle}
+          // eslint-disable-next-line react/no-unknown-property
+          onPointerDown={onGripPointerDown}
+        >
           <GripIcon />
         </div>
 
@@ -162,6 +191,8 @@ export const LaneHeader = memo(function LaneHeader({
           setEditState={setEditState}
           setIsItemInputVisible={setIsItemInputVisible}
           settingsMenu={settingsMenu}
+          isFloating={isFloating}
+          onMagnet={onMagnet}
         />
       </div>
 

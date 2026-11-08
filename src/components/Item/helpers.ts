@@ -274,20 +274,28 @@ export function constructMenuTimePickerOnChange({
 }
 
 export function getItemClassModifiers(item: Item) {
-  const date = item.data.metadata.date;
+  const dueDate = item.data.metadata.date;
+  const startDate = item.data.metadata.startDate;
   const classModifiers: string[] = [];
+  const today = moment().startOf('day');
 
-  if (date) {
-    if (date.isSame(new Date(), 'day')) {
+  if (dueDate || startDate) {
+    const periodStart = startDate || dueDate;
+    const periodEnd = dueDate || startDate;
+
+    if (startDate && dueDate && today.isBetween(startDate, dueDate, 'day', '[]')) {
       classModifiers.push('is-today');
-    }
-
-    if (date.isAfter(new Date(), 'day')) {
+    } else if (periodEnd.isSame(today, 'day')) {
+      classModifiers.push('is-today');
+    } else if (periodStart.isAfter(today, 'day')) {
       classModifiers.push('is-future');
+    } else if (periodEnd.isBefore(today, 'day')) {
+      classModifiers.push('is-past');
     }
 
-    if (date.isBefore(new Date(), 'day')) {
-      classModifiers.push('is-past');
+    // Kanban Plus: flag the card as overdue when its deadline has passed
+    if (!item.data.checked && periodEnd.isBefore(today, 'day')) {
+      classModifiers.push('is-overdue');
     }
   }
 

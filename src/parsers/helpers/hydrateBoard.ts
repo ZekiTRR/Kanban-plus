@@ -96,18 +96,52 @@ export function preprocessTitle(stateManager: StateManager, title: string) {
   return title;
 }
 
+const checklistLineRegEx = /^\s*[-+*]\s+\[(.)\]/;
+
+/** Counts markdown checkboxes contained in a card's body (Kanban Plus). */
+export function getChecklistProgress(titleRaw: string): { done: number; total: number } {
+  let done = 0;
+  let total = 0;
+
+  for (const line of titleRaw.split(/\r?\n/)) {
+    const match = checklistLineRegEx.exec(line);
+    if (!match) continue;
+
+    total++;
+    if (match[1] !== ' ') done++;
+  }
+
+  return { done, total };
+}
+
+function parseStoredDate(
+  stateManager: StateManager,
+  value: string,
+  formatKey: 'date-format' | 'date-display-format'
+) {
+  // Tasks-style emoji dates are always ISO (YYYY-MM-DD); board triggers use
+  // the configured date format. Try ISO first, then the configured format.
+  const iso = moment(value, 'YYYY-MM-DD', true);
+  if (iso.isValid()) return iso;
+
+  return moment(value, stateManager.getSetting(formatKey) as string);
+}
+
 export function hydrateItem(stateManager: StateManager, item: Item) {
-  const { dateStr, timeStr, fileAccessor } = item.data.metadata;
+  const { metadata } = item.data;
+  const { dateStr, timeStr, startDateStr, doneDateStr, fileAccessor } = metadata;
 
   if (dateStr) {
-    item.data.metadata.date = moment(dateStr, stateManager.getSetting('date-format'));
+    metadata.date = parseStoredDate(stateManager, dateStr, 'date-format');
+  } else {
+    delete metadata.date;
   }
 
   if (timeStr) {
     let time = moment(timeStr, stateManager.getSetting('time-format'));
 
-    if (item.data.metadata.date) {
-      const date = item.data.metadata.date;
+    if (metadata.date) {
+      const date = metadata.date;
 
       date.hour(time.hour());
       date.minute(time.minute());
@@ -116,7 +150,28 @@ export function hydrateItem(stateManager: StateManager, item: Item) {
       time = date.clone();
     }
 
-    item.data.metadata.time = time;
+    metadata.time = time;
+  } else {
+    delete metadata.time;
+  }
+
+  if (startDateStr) {
+    metadata.startDate = parseStoredDate(stateManager, startDateStr, 'date-format');
+  } else {
+    delete metadata.startDate;
+  }
+
+  if (doneDateStr) {
+    metadata.doneDate = parseStoredDate(stateManager, doneDateStr, 'date-format');
+  } else {
+    delete metadata.doneDate;
+  }
+
+  const checklist = getChecklistProgress(item.data.titleRaw);
+  if (checklist.total > 0) {
+    metadata.checklist = checklist;
+  } else {
+    delete metadata.checklist;
   }
 
   if (fileAccessor) {
@@ -126,7 +181,7 @@ export function hydrateItem(stateManager: StateManager, item: Item) {
     );
 
     if (file) {
-      item.data.metadata.file = file;
+      metadata.file = file;
     }
   }
 
