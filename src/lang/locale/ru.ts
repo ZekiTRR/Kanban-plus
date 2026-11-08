@@ -397,6 +397,9 @@ const lang: Partial<Lang> = {
   'No date': 'Без даты',
   Day: 'День',
   Year: 'Год',
+  Edit: 'Редактировать',
+  Preview: 'Предпросмотр',
+  'No content yet.': 'Пока нет содержимого.',
 };
 
 export default lang;

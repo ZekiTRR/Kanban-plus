@@ -452,6 +452,9 @@ const en = {
   'No date': 'No date',
   Day: 'Day',
   Year: 'Year',
+  Edit: 'Edit',
+  Preview: 'Preview',
+  'No content yet.': 'No content yet.',
 };
 
 export type Lang = typeof en;

@@ -81,6 +81,63 @@ export class CardDetailModal extends Modal {
     return findItemById(this.stateManager.state, this.itemId);
   }
 
+  /** Renders Markdown into `el` with Obsidian's renderer (links, embeds, tasks, tables). */
+  private renderMarkdownInto(el: HTMLElement, markdown: string) {
+    el.empty();
+
+    if (!markdown || !markdown.trim()) {
+      el.createEl('p', { text: t('No content yet.'), cls: c('card-detail-empty') });
+      return;
+    }
+
+    const component = this.mdComponent;
+    if (!component) {
+      el.setText(markdown);
+      return;
+    }
+
+    try {
+      const renderPromise = ObsidianMarkdownRenderer.render(
+        this.app,
+        markdown,
+        el,
+        this.stateManager.file.path,
+        component
+      );
+
+      if (renderPromise && typeof renderPromise.catch === 'function') {
+        renderPromise.catch(() => el.setText(markdown));
+      }
+    } catch {
+      el.setText(markdown);
+    }
+  }
+
+  /** Segmented Edit / Preview control shared by the description and comment composer. */
+  private createMarkdownTabs(container: HTMLElement, onMode: (mode: 'edit' | 'preview') => void) {
+    const tabs = container.createDiv(c('card-detail-md-tabs'));
+    const editBtn = tabs.createEl('button', {
+      text: t('Edit'),
+      cls: c('card-detail-md-tab'),
+    });
+    editBtn.toggleClass('is-active', true);
+    const previewBtn = tabs.createEl('button', {
+      text: t('Preview'),
+      cls: c('card-detail-md-tab'),
+    });
+
+    const setMode = (mode: 'edit' | 'preview') => {
+      editBtn.toggleClass('is-active', mode === 'edit');
+      previewBtn.toggleClass('is-active', mode === 'preview');
+      onMode(mode);
+    };
+
+    editBtn.addEventListener('click', () => setMode('edit'));
+    previewBtn.addEventListener('click', () => setMode('preview'));
+
+    return tabs;
+  }
+
   onOpen() {
     this.modalEl.addClass(c('card-detail-modal'));
     this.mdComponent = new Component();
@@ -372,6 +429,20 @@ export class CardDetailModal extends Modal {
     textarea.placeholder = t('Add a more detailed description...');
     textarea.rows = 5;
 
+    const previewEl = section.createDiv(c('card-detail-md-preview'));
+    previewEl.style.display = 'none';
+
+    const updatePreview = () => this.renderMarkdownInto(previewEl, textarea.value);
+    textarea.addEventListener('input', updatePreview);
+
+    this.createMarkdownTabs(section, (mode) => {
+      const isPreview = mode === 'preview';
+      textarea.style.display = isPreview ? 'none' : '';
+      previewEl.style.display = isPreview ? '' : 'none';
+
+      if (isPreview) updatePreview();
+    });
+
     const actions = section.createDiv(c('card-detail-actions'));
     const save = actions.createEl('button', { text: t('Save') });
 
@@ -539,6 +610,20 @@ export class CardDetailModal extends Modal {
       attr: { placeholder: t('Write a comment...'), rows: '2' },
     });
 
+    const previewEl = section.createDiv(c('card-detail-md-preview'));
+    previewEl.style.display = 'none';
+
+    const updatePreview = () => this.renderMarkdownInto(previewEl, input.value);
+    input.addEventListener('input', updatePreview);
+
+    this.createMarkdownTabs(section, (mode) => {
+      const isPreview = mode === 'preview';
+      input.style.display = isPreview ? 'none' : '';
+      previewEl.style.display = isPreview ? '' : 'none';
+
+      if (isPreview) updatePreview();
+    });
+
     const addBtn = section.createEl('button', { text: t('Comment') });
     addBtn.addClass('mod-cta');
     addBtn.addEventListener('click', () => {
@@ -580,7 +665,14 @@ export class CardDetailModal extends Modal {
         text: entry.kind === 'comment' ? t('You') : t('Activity'),
         cls: c('card-detail-feed-author'),
       });
-      body.createDiv({ text: entry.text, cls: c('card-detail-feed-text') });
+
+      if (entry.kind === 'comment') {
+        const rendered = body.createDiv(c('card-detail-feed-text'));
+        this.renderMarkdownInto(rendered, entry.text);
+      } else {
+        body.createDiv({ text: entry.text, cls: c('card-detail-feed-text') });
+      }
+
       body.createDiv({ text: formatCardTime(entry.ts), cls: c('card-detail-feed-time') });
     });
   }
