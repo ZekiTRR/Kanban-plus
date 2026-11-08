@@ -14,6 +14,7 @@ import { t } from 'src/lang/helpers';
 import { DndScope } from '../dnd/components/Scope';
 import { getBoardModifiers } from '../helpers/boardModifiers';
 import { frontmatterKey } from '../parsers/common';
+import { backgroundToCss, fontToCss } from './appearance';
 import { CalendarView } from './Calendar/Calendar';
 import { FilterBar } from './FilterBar';
 import { Icon } from './Icon/Icon';
@@ -70,7 +71,15 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const tagColors = stateManager.useSetting('tag-colors');
   const enableAnimations = stateManager.useSetting('enable-animations');
   const enableZoomSetting = stateManager.useSetting('enable-zoom');
+  const boardBackground = stateManager.useSetting('board-background');
+  const boardFont = stateManager.useSetting('board-font');
   const boardView = view.useViewState(frontmatterKey);
+
+  const boardBg = useMemo(
+    () => backgroundToCss(stateManager.app, boardBackground),
+    [stateManager, boardBackground]
+  );
+  const boardFontStyle = useMemo(() => fontToCss(boardFont), [boardFont]);
 
   // ---- Kanban Plus: board zoom (Ctrl + wheel, pinch, +/- buttons) ----
   // Stored per-view (workspace layout) so scrolling / wheel ticks never
@@ -367,8 +376,10 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                 'something-is-dragging': isAnythingDragging,
                 'kp-anim': enableAnimations !== false,
               },
+              boardBg.className,
               ...getCSSClass(boardData.data.frontmatter),
             ])}
+            style={{ ...boardFontStyle, ...boardBg.vars }}
             {...html5DragHandlers}
           >
             {(isLaneFormVisible || boardData.children.length === 0) && (

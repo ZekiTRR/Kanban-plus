@@ -254,6 +254,11 @@ export class StateManager {
       'show-board-settings': this.getSettingRaw('show-board-settings', suppliedSettings) ?? true,
       'show-search': this.getSettingRaw('show-search', suppliedSettings) ?? true,
       'show-set-view': this.getSettingRaw('show-set-view', suppliedSettings) ?? true,
+      'default-font': this.getSettingRaw('default-font', suppliedSettings),
+      'board-font':
+        this.getSettingRaw('board-font', suppliedSettings) ||
+        this.getSettingRaw('default-font', suppliedSettings),
+      'board-background': this.getSettingRaw('board-background', suppliedSettings),
       'tag-colors': this.getSettingRaw('tag-colors', suppliedSettings) ?? [],
       'tag-sort': this.getSettingRaw('tag-sort', suppliedSettings) ?? [],
       'date-colors': this.getSettingRaw('date-colors', suppliedSettings) ?? [],

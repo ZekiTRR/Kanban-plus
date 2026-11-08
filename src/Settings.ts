@@ -30,8 +30,10 @@ import {
   TagSort,
   TagSortSetting,
   TagSortSettingTemplate,
+  BackgroundStyle,
 } from './components/types';
 import { getParentWindow } from './dnd/util/getWindow';
+import type { CardMeta } from './helpers/cardMeta';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
 import { frontmatterKey } from './parsers/common';
@@ -57,12 +59,16 @@ export interface KanbanSettings {
   'archive-date-format'?: string;
   'archive-date-separator'?: string;
   'archive-with-date'?: boolean;
+  'board-background'?: BackgroundStyle;
+  'board-font'?: string;
+  'card-meta'?: Record<string, CardMeta>;
   'date-colors'?: DateColor[];
   'date-display-format'?: string;
   'date-format'?: string;
   'date-picker-week-start'?: number;
   'date-time-display-format'?: string;
   'date-trigger'?: string;
+  'default-font'?: string;
   'enable-animations'?: boolean;
   'enable-free-lanes'?: boolean;
   'enable-zoom'?: boolean;
@@ -119,12 +125,16 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'archive-date-format',
   'archive-date-separator',
   'archive-with-date',
+  'board-background',
+  'board-font',
+  'card-meta',
   'date-colors',
   'date-display-format',
   'date-format',
   'date-picker-week-start',
   'date-time-display-format',
   'date-trigger',
+  'default-font',
   'enable-animations',
   'enable-free-lanes',
   'enable-zoom',
@@ -1317,6 +1327,35 @@ export class SettingsManager {
         }
       });
     });
+
+    contentEl.createEl('br');
+    contentEl.createEl('h4', { text: t('Appearance') });
+
+    new Setting(contentEl)
+      .setName(t('Default font'))
+      .setDesc(
+        t(
+          'Font family used by boards by default. A board or a card/list can override it in its appearance menu.'
+        )
+      )
+      .addText((text) => {
+        const [value, globalValue] = this.getSetting('default-font', local);
+
+        text.setPlaceholder((globalValue as string) || '-apple-system, "Segoe UI", Roboto, sans-serif');
+        text.setValue((value as string) || '');
+
+        text.onChange((newValue) => {
+          if (newValue.trim()) {
+            this.applySettingsUpdate({
+              'default-font': { $set: newValue.trim() },
+            });
+          } else {
+            this.applySettingsUpdate({
+              $unset: ['default-font'],
+            });
+          }
+        });
+      });
 
     contentEl.createEl('h4', { text: t('Board Header Buttons') });
 

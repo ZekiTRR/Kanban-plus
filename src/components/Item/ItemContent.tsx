@@ -9,6 +9,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
@@ -22,6 +23,7 @@ import {
 } from '../MarkdownRenderer/MarkdownRenderer';
 import { Icon } from '../Icon/Icon';
 import { KanbanContext, SearchContext } from '../context';
+import { colorPalette, getReadableTextColor } from '../colors';
 import { c, useGetDateColorFn, useGetTagColorFn } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
@@ -213,6 +215,54 @@ export function Tags({
   );
 }
 
+/** Kanban Plus: Trello-style labels — a colored bar that expands to a chip. */
+export function ItemLabels({ item }: { item: Item }) {
+  const { stateManager } = useContext(KanbanContext);
+  const getTagColor = useGetTagColorFn(stateManager);
+  const [expanded, setExpanded] = useState<string[]>([]);
+  const tags = item.data.metadata.tags || [];
+
+  if (!tags.length) return null;
+
+  const toggle = (tag: string) => {
+    setExpanded((prev) =>
+      prev.includes(tag) ? prev.filter((value) => value !== tag) : [...prev, tag]
+    );
+  };
+
+  return (
+    <div className={c('item-labels')}>
+      {tags.map((tag) => {
+        const tagColor = getTagColor(tag);
+        const fallbackIndex =
+          Array.from(tag).reduce((sum, char) => sum + char.charCodeAt(0), 0) %
+          colorPalette.length;
+        const fallback = colorPalette[fallbackIndex];
+        const isExpanded = expanded.includes(tag);
+        const background = tagColor?.backgroundColor || fallback;
+        const color = tagColor?.color || getReadableTextColor(fallback);
+
+        return (
+          <span
+            key={tag}
+            className={classcat([c('item-label'), { 'is-expanded': isExpanded }])}
+            style={{ backgroundColor: background, color }}
+            title={tag}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggle(tag);
+            }}
+            onDblClick={(e) => e.stopPropagation()}
+          >
+            <span className={c('item-label-text')}>{tag.replace(/^#/, '')}</span>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 export const ItemContent = memo(function ItemContent({
   item,
   editState,
@@ -311,6 +361,7 @@ export const ItemContent = memo(function ItemContent({
 
   return (
     <div onClick={onWrapperClick} className={c('item-title')}>
+      {showMetadata && <ItemLabels item={item} />}
       {isStatic ? (
         <MarkdownClonedPreviewRenderer
           entityId={item.id}

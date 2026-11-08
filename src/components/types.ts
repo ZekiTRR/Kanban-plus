@@ -22,13 +22,29 @@ export interface LaneData {
   sorted?: LaneSort | string;
 }
 
+export interface BackgroundStyle {
+  type: 'color' | 'gradient' | 'image';
+  /** Where the image comes from (only for `type: image`). */
+  source?: 'vault' | 'url' | 'local';
+  /** Hex color, CSS gradient value, vault path, URL or absolute local path. */
+  value: string;
+  /** Dark overlay strength for images (0–0.8). */
+  dim?: number;
+}
+
 export interface LaneStyle {
   color?: string;
   pos?: { x: number; y: number };
+  background?: BackgroundStyle;
+  font?: string;
+  textColor?: string;
 }
 
 export interface ItemStyle {
   color?: string;
+  background?: BackgroundStyle;
+  font?: string;
+  textColor?: string;
 }
 
 export interface ChecklistProgress {

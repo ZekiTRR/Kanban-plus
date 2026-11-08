@@ -9,12 +9,15 @@ Kanban Plus is a fork of [Obsidian Kanban](https://github.com/mgmeyers/obsidian-
 ## Features
 
 - **🎨 Colored lanes & cards.** Header/body tint for lanes, strip or full background for cards, palette and custom color. Stored in the `%% kanban:settings` block.
+- **🖼 Backgrounds, text and fonts.** Board, lane and card backgrounds: color, gradient, an image from the vault, a URL or a local file. Text color and font per board, lane or card; the default font lives in plugin settings.
+- **🏷 Trello-style labels.** A colored bar above the card expands to the label name on click and collapses on the next click. Existing tags and tag colors are kept.
 - **🏷 Tags & filters.** Colored tags, quick filter bar (tags, “Overdue”, “Today”, “Next 7 days”) and a tags submenu on cards.
 - **📌 Free-floating lanes.** Drag a lane out of the row and leave it anywhere on the board. The magnet button or a click on its background smoothly snaps it back.
 - **📥 Inbox, Trello-style.** A dedicated Inbox list for quick capture: toolbar button, ribbon action or `Ctrl/Cmd + Alt + I`, a card-count badge and one-click triage.
 - **🗓 Deadlines & periods.** Not just a due date, but a “from → to” range with semantic badge colors.
 - **📅 Calendar planner.** Month and week views, drag & drop cards between days, an “Unscheduled” panel, and drag-select to create a period.
 - **✅ Checklists.** A `☑ 2/5` progress counter with a bar right on the card.
+- **🗂 Trello-style card window.** Clicking a card opens a window with description, checklist, per-item comments and a comment/event feed, with a smooth appearance animation.
 - **✨ Animations.** Card hover lift, drag physics, FLIP transitions for lanes, respects `prefers-reduced-motion`.
 - **🔍 Board zoom.** `Ctrl + wheel` / `Cmd + wheel`, two-finger pinch, and `− / % / +` controls (40–200%).
 
@@ -29,6 +32,27 @@ Kanban Plus is a fork of [Obsidian Kanban](https://github.com/mgmeyers/obsidian-
 3. Enable **Kanban Plus** in Obsidian settings.
 
 > The plugin uses `id: obsidian-kanban-plus`, so don’t enable it together with the original `obsidian-kanban`.
+
+## Appearance
+
+- **Board background:** palette icon in the toolbar → “Board background”.
+- **Lane / card background:** list or card menu → “Lane background” / “Card background”. Pick a color, a gradient (presets or custom CSS) or an image — from the vault, a URL or a local file; images have a dimming control.
+- **Text color:** “Text color” in the lane or card menu — palette and custom color with a live preview.
+- **Fonts:** the same menus have “Lane / Card / Board font”. The global default is in plugin settings: Kanban Plus → “Default font”.
+- **Collapse all lists:** toolbar icon or the Appearance menu entry.
+
+## Card window
+
+Clicking a card opens a Trello-like window (links inside the card still work as links):
+
+- change the list (status);
+- description;
+- checklist with per-item comments;
+- comments and events, with a “Show details” toggle;
+- quick actions: “Add”, “Labels”, “Dates”, “Checklist”;
+- the “Labels” panel lets you assign existing labels, create new ones and change their colors right there.
+
+The “Open card” context-menu item is always available.
 
 ## Periods
 

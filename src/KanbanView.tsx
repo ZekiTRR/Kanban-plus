@@ -13,6 +13,8 @@ import {
 } from 'obsidian';
 
 import { KanbanFormat, KanbanSettings, KanbanViewSettings, SettingsModal } from './Settings';
+import { BackgroundModal } from './components/Appearance/BackgroundModal';
+import { FontModal } from './components/Appearance/FontModal';
 import { Kanban } from './components/Kanban';
 import { BasicMarkdownRenderer } from './components/MarkdownRenderer/MarkdownRenderer';
 import { c } from './components/helpers';
@@ -320,6 +322,91 @@ export class KanbanView extends TextFileView implements HoverParent {
     ).open();
   }
 
+  openAppearanceMenu(evt: MouseEvent) {
+    const stateManager = this.plugin.stateManagers.get(this.file);
+
+    if (!stateManager) return;
+
+    const totalLanes = stateManager.state?.children.length || 0;
+    const collapseState = this.getViewState('list-collapse') || [];
+    const allCollapsed =
+      totalLanes > 0 &&
+      Array.from({ length: totalLanes }, (_, i) => !!collapseState[i]).every(Boolean);
+
+    new Menu()
+      .addItem((item) =>
+        item
+          .setTitle(t('Board background'))
+          .setIcon('lucide-image')
+          .onClick(() => {
+            new BackgroundModal(
+              stateManager.app,
+              stateManager.getSetting('board-background'),
+              (background) => {
+                stateManager.setState((board) =>
+                  update(board, {
+                    data: {
+                      settings: background
+                        ? { 'board-background': { $set: background } }
+                        : { $unset: ['board-background'] },
+                    },
+                  })
+                );
+              },
+              'board'
+            ).open();
+          })
+      )
+      .addItem((item) =>
+        item
+          .setTitle(t('Board font'))
+          .setIcon('lucide-type')
+          .onClick(() => {
+            new FontModal(stateManager.app, stateManager.getSetting('board-font'), (font) => {
+              stateManager.setState((board) =>
+                update(board, {
+                  data: {
+                    settings: font
+                      ? { 'board-font': { $set: font } }
+                      : { $unset: ['board-font'] },
+                  },
+                })
+              );
+            }).open();
+          })
+      )
+      .addSeparator()
+      .addItem((item) =>
+        item
+          .setTitle(allCollapsed ? t('Expand all lists') : t('Collapse all lists'))
+          .setIcon(allCollapsed ? 'lucide-chevrons-down' : 'lucide-chevrons-up')
+          .onClick(() => this.toggleAllLanes(!allCollapsed))
+      )
+      .showAtMouseEvent(evt);
+  }
+
+  toggleAllLanes(collapse?: boolean) {
+    const stateManager = this.plugin.stateManagers.get(this.file);
+
+    if (!stateManager) return;
+
+    const total = stateManager.state?.children.length || 0;
+    const current = this.getViewState('list-collapse') || [];
+    const shouldCollapse =
+      collapse === undefined
+        ? !Array.from({ length: total }, (_, i) => !!current[i]).every(Boolean)
+        : collapse;
+
+    const next = Array.from({ length: total }, () => shouldCollapse);
+
+    this.setViewState('list-collapse', undefined, () => [...next]);
+    stateManager.setState((board) =>
+      update(board, {
+        data: { settings: { 'list-collapse': { $set: next } } },
+      })
+    );
+  }
+
   onPaneMenu(menu: Menu, source: string, callSuper: boolean = true) {
     if (source !== 'more-options') {
       super.onPaneMenu(menu, source);
@@ -525,6 +612,22 @@ export class KanbanView extends TextFileView implements HoverParent {
     } else if (this.actionButtons['inbox']) {
       this.actionButtons['inbox'].remove();
       delete this.actionButtons['inbox'];
+    }
+
+    if (!this.actionButtons['appearance']) {
+      this.actionButtons['appearance'] = this.addAction(
+        'lucide-palette',
+        t('Appearance'),
+        (evt) => this.openAppearanceMenu(evt)
+      );
+    }
+
+    if (!this.actionButtons['collapse-all']) {
+      this.actionButtons['collapse-all'] = this.addAction(
+        'lucide-chevrons-up',
+        t('Collapse all lists'),
+        () => this.toggleAllLanes()
+      );
     }
   };
 

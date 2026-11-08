@@ -30,6 +30,7 @@ import { getTaskStatusDone } from 'src/parsers/helpers/inlineMetadata';
 
 import { Items } from '../Item/Item';
 import { ItemForm } from '../Item/ItemForm';
+import { backgroundToCss, fontToCss } from '../appearance';
 import { KanbanContext, SearchContext, SortContext } from '../context';
 import { c, clampZoom, generateInstanceId, noop } from '../helpers';
 import { laneColorToCssVars, setLanePos } from '../colors';
@@ -81,6 +82,13 @@ function DraggableLaneRaw({
   const laneColor = showLaneColors !== false ? laneStylesSetting?.[laneIndex]?.color : undefined;
   const pos = enableFreeLanes ? laneStylesSetting?.[laneIndex]?.pos : undefined;
   const isFloating = !!pos;
+  const laneEntry = laneStylesSetting?.[laneIndex];
+  const laneBg = useMemo(
+    () => backgroundToCss(stateManager.app, laneEntry?.background),
+    [stateManager, laneEntry?.background]
+  );
+  const laneFontStyle = useMemo(() => fontToCss(laneEntry?.font), [laneEntry?.font]);
+  const laneTextColor = laneEntry?.textColor;
   const laneStyles = useMemo(
     () =>
       !(isCollapsed && collapseDir === 'horizontal') && (fullWidth || laneWidth)
@@ -474,8 +482,16 @@ function DraggableLaneRaw({
             'collapse-horizontal': isCollapsed && collapseDir === 'horizontal',
             'collapse-vertical': isCollapsed && collapseDir === 'vertical',
           },
+          laneBg.className,
         ])}
-        style={{ ...(laneStyles || {}), ...laneColorVars, ...floatingStyles }}
+        style={{
+          ...(laneStyles || {}),
+          ...laneColorVars,
+          ...laneBg.vars,
+          ...laneFontStyle,
+          ...(laneTextColor ? { color: laneTextColor } : {}),
+          ...floatingStyles,
+        }}
       >
         <div
           data-count={lane.children.length}

@@ -13,7 +13,11 @@ import {
 import { t } from 'src/lang/helpers';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
-import { addColorMenu, setItemColor } from '../colors';
+import { BackgroundModal } from '../Appearance/BackgroundModal';
+import { FontModal } from '../Appearance/FontModal';
+import { TextColorModal } from '../Appearance/TextColorModal';
+import { CardDetailModal } from './CardDetailModal';
+import { addColorMenu, setItemAppearance, setItemColor } from '../colors';
 import { KanbanContext } from '../context';
 import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
 import { EditState, Item } from '../types';
@@ -81,6 +85,12 @@ export function useItemMenu({
           .onClick(() => setEditState(coordinates));
       });
 
+      menu.addItem((i) => {
+        i.setIcon('lucide-maximize-2')
+          .setTitle(t('Open card'))
+          .onClick(() => new CardDetailModal(view, stateManager, item).open());
+      });
+
       addColorMenu(menu, {
         currentColor,
         onPick: (color) => {
@@ -92,6 +102,58 @@ export function useItemMenu({
             setItemColor(stateManager, item.data.blockId, null);
           }
         },
+      });
+
+      menu.addItem((i) => {
+        i.setIcon('lucide-image')
+          .setTitle(t('Card background'))
+          .onClick(() => {
+            const current = item.data.blockId
+              ? stateManager.getSetting('item-styles')?.[item.data.blockId]?.background
+              : undefined;
+
+            new BackgroundModal(stateManager.app, current, (background) => {
+              const withId = ensureBlockId();
+              setItemAppearance(stateManager, withId.data.blockId as string, { background });
+            }, 'card').open();
+          });
+      });
+
+      menu.addItem((i) => {
+        i.setIcon('lucide-type')
+          .setTitle(t('Card font'))
+          .onClick(() => {
+            const current = item.data.blockId
+              ? stateManager.getSetting('item-styles')?.[item.data.blockId]?.font
+              : undefined;
+
+            new FontModal(stateManager.app, current, (font) => {
+              const withId = ensureBlockId();
+              setItemAppearance(stateManager, withId.data.blockId as string, { font });
+            }).open();
+          });
+      });
+
+      menu.addItem((i) => {
+        i.setIcon('lucide-baseline')
+          .setTitle(t('Text color'))
+          .onClick(() => {
+            const style = item.data.blockId
+              ? stateManager.getSetting('item-styles')?.[item.data.blockId]
+              : undefined;
+
+            new TextColorModal(
+              stateManager.app,
+              'card',
+              style?.textColor,
+              style?.background,
+              style?.font,
+              (textColor) => {
+                const withId = ensureBlockId();
+                setItemAppearance(stateManager, withId.data.blockId as string, { textColor });
+              }
+            ).open();
+          });
       });
 
       menu

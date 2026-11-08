@@ -1,6 +1,6 @@
 {
   "name": "obsidian-kanban-plus",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Markdown-backed Kanban boards in Obsidian, supercharged: colored lanes & cards, deadlines & periods, checklists, free-floating lanes, zoom, animations and a calendar planner. Fork of obsidian-kanban.",
   "main": "main.js",
   "scripts": {

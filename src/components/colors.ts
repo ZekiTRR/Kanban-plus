@@ -6,7 +6,7 @@ import { RgbaStringColorPicker } from 'react-colorful';
 import { StateManager } from 'src/StateManager';
 import { t } from 'src/lang/helpers';
 
-import { Board, Item, ItemStyle, LaneStyle } from './types';
+import { Board, BackgroundStyle, Item, ItemStyle, LaneStyle, TagColor } from './types';
 
 /** Base palette (Trello-inspired) */
 export const colorPalette: string[] = [
@@ -254,6 +254,17 @@ export function laneStylesAfterMoveLane(board: Board, from: number, to: number):
   });
 }
 
+function isLaneStyleEmpty(style: LaneStyle | undefined): boolean {
+  return (
+    !style ||
+    (!style.color && !style.pos && !style.background && !style.font && !style.textColor)
+  );
+}
+
+function isItemStyleEmpty(style: ItemStyle | undefined): boolean {
+  return !style || (!style.color && !style.background && !style.font && !style.textColor);
+}
+
 /** Sets (or clears) the color of the lane at the given index, creating the styles array on demand. */
 export function setLaneColor(
   stateManager: StateManager,
@@ -273,7 +284,7 @@ export function setLaneColor(
     else delete entry.color;
     styles[laneIndex] = entry;
 
-    if (styles.every((s) => !s || (!s.color && !s.pos))) {
+    if (styles.every(isLaneStyleEmpty)) {
       delete settings['lane-styles'];
     } else {
       settings['lane-styles'] = styles;
@@ -301,7 +312,7 @@ export function setLanePos(
     else delete entry.pos;
     styles[laneIndex] = entry;
 
-    if (styles.every((s) => !s || (!s.color && !s.pos))) {
+    if (styles.every(isLaneStyleEmpty)) {
       delete settings['lane-styles'];
     } else {
       settings['lane-styles'] = styles;
@@ -311,17 +322,127 @@ export function setLanePos(
   });
 }
 
-/** Sets (or clears) the color of a card by block id. */
+/** Sets or clears the background/font of a lane, preserving its color and position. */
+export function setLaneAppearance(
+  stateManager: StateManager,
+  laneIndex: number,
+  laneCount: number,
+  patch: { background?: BackgroundStyle | null; font?: string | null; textColor?: string | null }
+) {
+  stateManager.setState((board) => {
+    const settings = { ...board.data.settings };
+    const styles = [...((settings['lane-styles'] as LaneStyle[]) || [])];
+    while (styles.length < laneCount) styles.push({});
+
+    const entry: LaneStyle = { ...(styles[laneIndex] || {}) };
+
+    if ('background' in patch) {
+      if (patch.background) entry.background = patch.background;
+      else delete entry.background;
+    }
+
+    if ('font' in patch) {
+      if (patch.font && patch.font.trim()) entry.font = patch.font.trim();
+      else delete entry.font;
+    }
+
+    if ('textColor' in patch) {
+      if (patch.textColor) entry.textColor = normalizeColor(patch.textColor);
+      else delete entry.textColor;
+    }
+
+    styles[laneIndex] = entry;
+
+    if (styles.every(isLaneStyleEmpty)) {
+      delete settings['lane-styles'];
+    } else {
+      settings['lane-styles'] = styles;
+    }
+
+    return update(board, { data: { settings: { $set: settings } } });
+  });
+}
+
+/** Sets or clears the color of a tag (used by the card window label editor). */
+export function setTagColor(
+  stateManager: StateManager,
+  tagKey: string,
+  backgroundColor: string | null
+) {
+  stateManager.setState((board) => {
+    const settings = { ...board.data.settings };
+    const colors = [...((settings['tag-colors'] as TagColor[]) || [])];
+    const index = colors.findIndex((entry) => entry.tagKey === tagKey);
+
+    if (backgroundColor) {
+      const bg = normalizeColor(backgroundColor);
+      const color = getReadableTextColor(bg);
+      const next = { tagKey, color, backgroundColor: bg };
+
+      if (index >= 0) colors[index] = next;
+      else colors.push(next);
+    } else if (index >= 0) {
+      colors.splice(index, 1);
+    }
+
+    settings['tag-colors'] = colors;
+
+    return update(board, { data: { settings: { $set: settings } } });
+  });
+}
+
+/** Sets or clears the color of a card by block id. */
 export function setItemColor(stateManager: StateManager, blockId: string, color: string | null) {
   stateManager.setState((board) => {
     const settings = { ...board.data.settings };
     const styles = { ...((settings['item-styles'] as Record<string, ItemStyle>) || {}) };
 
-    if (color) {
-      styles[blockId] = { ...(styles[blockId] || {}), color: normalizeColor(color) };
+    const entry: ItemStyle = { ...(styles[blockId] || {}) };
+
+    if (color) entry.color = normalizeColor(color);
+    else delete entry.color;
+
+    if (isItemStyleEmpty(entry)) delete styles[blockId];
+    else styles[blockId] = entry;
+
+    if (Object.keys(styles).length === 0) {
+      delete settings['item-styles'];
     } else {
-      delete styles[blockId];
+      settings['item-styles'] = styles;
     }
+
+    return update(board, { data: { settings: { $set: settings } } });
+  });
+}
+
+/** Sets or clears the background/font of a card by block id. */
+export function setItemAppearance(
+  stateManager: StateManager,
+  blockId: string,
+  patch: { background?: BackgroundStyle | null; font?: string | null; textColor?: string | null }
+) {
+  stateManager.setState((board) => {
+    const settings = { ...board.data.settings };
+    const styles = { ...((settings['item-styles'] as Record<string, ItemStyle>) || {}) };
+    const entry: ItemStyle = { ...(styles[blockId] || {}) };
+
+    if ('background' in patch) {
+      if (patch.background) entry.background = patch.background;
+      else delete entry.background;
+    }
+
+    if ('font' in patch) {
+      if (patch.font && patch.font.trim()) entry.font = patch.font.trim();
+      else delete entry.font;
+    }
+
+    if ('textColor' in patch) {
+      if (patch.textColor) entry.textColor = normalizeColor(patch.textColor);
+      else delete entry.textColor;
+    }
+
+    if (isItemStyleEmpty(entry)) delete styles[blockId];
+    else styles[blockId] = entry;
 
     if (Object.keys(styles).length === 0) {
       delete settings['item-styles'];

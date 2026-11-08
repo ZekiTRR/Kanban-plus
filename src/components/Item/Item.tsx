@@ -15,9 +15,11 @@ import { useDragHandle } from 'src/dnd/managers/DragManager';
 import { frontmatterKey } from 'src/parsers/common';
 
 import { KanbanContext, SearchContext } from '../context';
+import { backgroundToCss, fontToCss } from '../appearance';
 import { itemColorToCssVars } from '../colors';
 import { c } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
+import { CardDetailModal } from './CardDetailModal';
 import { ItemCheckbox } from './ItemCheckbox';
 import { ItemContent } from './ItemContent';
 import { useItemMenu } from './ItemMenu';
@@ -47,10 +49,25 @@ const ItemInner = memo(function ItemInner({
   searchQuery,
   isStatic,
 }: ItemInnerProps) {
-  const { stateManager, boardModifiers } = useContext(KanbanContext);
+  const { stateManager, boardModifiers, view } = useContext(KanbanContext);
   const [editState, setEditState] = useState<EditState>(EditingState.cancel);
+  const clickTimer = useRef(0);
+  const pointerStartRef = useRef<{ x: number; y: number; t: number } | null>(null);
 
   const dndManager = useContext(DndManagerContext);
+  const lastDragEndRef = useRef(0);
+
+  useEffect(() => {
+    const { emitter } = dndManager.dragManager;
+    const onDragEnd = () => {
+      lastDragEndRef.current = Date.now();
+    };
+
+    emitter.on('dragEnd', onDragEnd);
+    return () => {
+      emitter.off('dragEnd', onDragEnd);
+    };
+  }, [dndManager]);
 
   useEffect(() => {
     const handler = () => {
@@ -94,9 +111,63 @@ const ItemInner = memo(function ItemInner({
   );
 
   const onDoubleClick: JSX.MouseEventHandler<HTMLDivElement> = useCallback(
-    (e) => setEditState({ x: e.clientX, y: e.clientY }),
-    [setEditState]
+    (e) => {
+      view.getWindow().clearTimeout(clickTimer.current);
+      setEditState({ x: e.clientX, y: e.clientY });
+    },
+    [setEditState, view]
   );
+
+  // Kanban Plus: click/tap on a card opens the Trello-style detail modal.
+  // We can't use `click` here because the drag handle calls preventDefault()
+  // on pointerdown, which suppresses the synthetic click event.
+  const scheduleOpen = useCallback(
+    (target: HTMLElement | null) => {
+      if (
+        target?.closest(
+          'a, input, textarea, button, select, .kanban-plugin__item-label, .kanban-plugin__item-metadata, .kanban-plugin__item-input-wrapper, .kanban-plugin__item-prefix-button, .kanban-plugin__item-postfix-button'
+        )
+      ) {
+        return;
+      }
+
+      view.getWindow().clearTimeout(clickTimer.current);
+      clickTimer.current = view.getWindow().setTimeout(() => {
+        if (view.getWindow().getSelection?.()?.toString()) return;
+        new CardDetailModal(view, stateManager, item).open();
+      }, 180);
+    },
+    [item, stateManager, view]
+  );
+
+  const onPointerDown: JSX.PointerEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      if (e.button !== 0 || isEditing(editState)) return;
+      pointerStartRef.current = { x: e.clientX, y: e.clientY, t: Date.now() };
+    },
+    [editState]
+  );
+
+  const onPointerUp: JSX.PointerEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      const start = pointerStartRef.current;
+      pointerStartRef.current = null;
+
+      if (!start || isEditing(editState)) return;
+      if (e.button !== 0) return;
+
+      const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y);
+      if (moved > 6 || Date.now() - start.t > 700) return;
+      if (Date.now() - lastDragEndRef.current < 350) return;
+
+      scheduleOpen(e.target as HTMLElement);
+    },
+    [editState, lastDragEndRef, scheduleOpen]
+  );
+
+  useEffect(() => {
+    return () => view.getWindow().clearTimeout(clickTimer.current);
+  }, [view]);
 
   const ignoreAttr = useMemo(() => {
     if (isEditing(editState)) {
@@ -112,6 +183,8 @@ const ItemInner = memo(function ItemInner({
     <div
       // eslint-disable-next-line react/no-unknown-property
       onDblClick={onDoubleClick}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
       onContextMenu={onContextMenu}
       className={c('item-content-wrapper')}
       {...ignoreAttr}
@@ -157,6 +230,12 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
     () => itemColorToCssVars(itemColor, itemColorStyle),
     [itemColor, itemColorStyle]
   );
+  const itemEntry = blockId ? itemStyles?.[blockId] : undefined;
+  const itemBg = useMemo(
+    () => backgroundToCss(stateManager.app, itemEntry?.background),
+    [stateManager, itemEntry?.background]
+  );
+  const itemFontStyle = useMemo(() => fontToCss(itemEntry?.font), [itemEntry?.font]);
 
   const isMatch = search?.query ? innerProps.item.data.titleSearch.includes(search.query) : false;
   const classModifiers: string[] = getItemClassModifiers(innerProps.item);
@@ -180,8 +259,14 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
             'item-color-strip': !!itemColor && itemColorStyle !== 'full',
             'kp-pop-in': !!innerProps.item.data.justAdded,
           },
+          itemBg.className,
         ])}
-        style={itemColorVars}
+        style={{
+          ...itemColorVars,
+          ...itemBg.vars,
+          ...itemFontStyle,
+          ...(itemEntry?.textColor ? { color: itemEntry.textColor } : {}),
+        }}
       >
         {props.isStatic ? (
           <ItemInner

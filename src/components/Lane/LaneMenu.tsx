@@ -8,8 +8,11 @@ import { t } from 'src/lang/helpers';
 import { lableToName } from 'src/parsers/helpers/inlineMetadata';
 
 import { anyToString } from '../Item/MetadataTable';
+import { BackgroundModal } from '../Appearance/BackgroundModal';
+import { FontModal } from '../Appearance/FontModal';
+import { TextColorModal } from '../Appearance/TextColorModal';
 import { KanbanContext } from '../context';
-import { addColorMenu, setLaneColor, setLanePos } from '../colors';
+import { addColorMenu, setLaneAppearance, setLaneColor, setLanePos } from '../colors';
 import { c, generateInstanceId } from '../helpers';
 import { EditState, Lane, LaneSort, LaneStyle, LaneTemplate } from '../types';
 
@@ -114,6 +117,52 @@ export function useSettingsMenu({
       onPick: (color) =>
         setLaneColor(stateManager, path.last(), stateManager.state.children.length, color),
       onClear: () => setLaneColor(stateManager, path.last(), stateManager.state.children.length, null),
+    });
+
+    const laneStyle = (stateManager.getSetting('lane-styles') as LaneStyle[] | undefined)?.[
+      path.last()
+    ];
+
+    menu.addItem((i) => {
+      i.setIcon('lucide-image')
+        .setTitle(t('Lane background'))
+        .onClick(() => {
+          new BackgroundModal(stateManager.app, laneStyle?.background, (background) => {
+            setLaneAppearance(stateManager, path.last(), stateManager.state.children.length, {
+              background,
+            });
+          }, 'lane').open();
+        });
+    });
+
+    menu.addItem((i) => {
+      i.setIcon('lucide-type')
+        .setTitle(t('Lane font'))
+        .onClick(() => {
+          new FontModal(stateManager.app, laneStyle?.font, (font) => {
+            setLaneAppearance(stateManager, path.last(), stateManager.state.children.length, {
+              font,
+            });
+          }).open();
+        });
+    });
+
+    menu.addItem((i) => {
+      i.setIcon('lucide-baseline')
+        .setTitle(t('Text color'))
+        .onClick(() => {
+          new TextColorModal(
+            stateManager.app,
+            'lane',
+            laneStyle?.textColor,
+            laneStyle?.background,
+            laneStyle?.font,
+            (textColor) =>
+              setLaneAppearance(stateManager, path.last(), stateManager.state.children.length, {
+                textColor,
+              })
+          ).open();
+        });
     });
 
     // Kanban Plus: free-floating lanes
