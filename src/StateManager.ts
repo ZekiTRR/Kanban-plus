@@ -269,6 +269,8 @@ export class StateManager {
       'enable-animations': this.getSettingRaw('enable-animations', suppliedSettings) ?? true,
       'enable-free-lanes': this.getSettingRaw('enable-free-lanes', suppliedSettings) ?? false,
       'enable-zoom': this.getSettingRaw('enable-zoom', suppliedSettings) ?? true,
+      inbox: this.getSettingRaw('inbox', suppliedSettings) ?? true,
+      'inbox-title': this.getSettingRaw('inbox-title', suppliedSettings) || 'Inbox',
       'lane-styles': this.getSettingRaw('lane-styles', suppliedSettings),
       'item-styles': this.getSettingRaw('item-styles', suppliedSettings),
     };

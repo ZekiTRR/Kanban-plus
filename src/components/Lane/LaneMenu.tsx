@@ -3,6 +3,7 @@ import { Menu, Platform } from 'obsidian';
 import { Dispatch, StateUpdater, useContext, useEffect, useMemo, useState } from 'preact/hooks';
 import { Path } from 'src/dnd/types';
 import { defaultSort } from 'src/helpers/util';
+import { getInboxTitle, isInboxEnabled, isInboxLane } from 'src/helpers/inbox';
 import { t } from 'src/lang/helpers';
 import { lableToName } from 'src/parsers/helpers/inlineMetadata';
 
@@ -136,6 +137,46 @@ export function useSettingsMenu({
             });
         });
       }
+    }
+
+    // Kanban Plus: inbox triage helpers
+    const inboxEnabled = isInboxEnabled(stateManager);
+    const inboxTitle = getInboxTitle(stateManager);
+
+    if (inboxEnabled && isInboxLane(lane, inboxTitle)) {
+      const lanes = stateManager.state.children;
+
+      if (lanes.length > 1 && lane.children.length > 0) {
+        menu.addItem((i) => {
+          const submenu = (i as any)
+            .setTitle(t('Move all cards to'))
+            .setIcon('lucide-corner-up-right')
+            .setSubmenu() as Menu;
+
+          lanes.forEach((targetLane, targetIndex) => {
+            if (targetIndex === path.last()) return;
+
+            submenu.addItem((mi) =>
+              mi
+                .setTitle(targetLane.data.title)
+                .setIcon('lucide-square-kanban')
+                .onClick(() => boardModifiers.moveLaneItemsTo(path, targetIndex))
+            );
+          });
+        });
+      }
+
+      menu.addItem((i) => {
+        i.setIcon('lucide-eye-off')
+          .setTitle(t('Hide inbox'))
+          .onClick(() =>
+            stateManager.setState((board) =>
+              update(board, {
+                data: { settings: { inbox: { $set: false } } },
+              })
+            )
+          );
+      });
     }
 
     menu

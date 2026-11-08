@@ -281,6 +281,22 @@ const lang: Partial<Lang> = {
   Period: 'Срок',
   'Drop a card here to set it as the period':
     'Перетащите карточку сюда, чтобы задать этот срок',
+  'Add to inbox': 'Добавить во входящие',
+  'New cards will land in the inbox list.': 'Новые карточки попадут в список «Входящие».',
+  'Card added to inbox': 'Карточка добавлена во входящие',
+  'Cards added': 'Добавлено карточек',
+  'New line': 'Новая строка',
+  'Open a Kanban board first': 'Сначала откройте доску Kanban',
+  'Inbox is disabled in board settings.': 'Входящие отключены в настройках доски.',
+  'Move to inbox': 'Переместить во входящие',
+  'Move all cards to': 'Переместить все карточки в',
+  'Hide inbox': 'Скрыть входящие',
+  'Enable Inbox': 'Входящие (Inbox)',
+  'Adds a dedicated Inbox list and a quick-capture dialog for new cards.':
+    'Добавляет отдельный список «Входящие» и быстрое добавление карточек.',
+  'Inbox list name': 'Название списка входящих',
+  'Name of the list used as Inbox.': 'Название списка, который считается входящими.',
+  Inbox: 'Входящие',
 };
 
 export default lang;

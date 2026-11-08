@@ -1,6 +1,7 @@
 import { around } from 'monkey-around';
 import {
   MarkdownView,
+  Notice,
   Platform,
   Plugin,
   TFile,
@@ -16,8 +17,10 @@ import { KanbanView, kanbanIcon, kanbanViewType } from './KanbanView';
 import { KanbanSettings, KanbanSettingsTab } from './Settings';
 import { StateManager } from './StateManager';
 import { DateSuggest, TimeSuggest } from './components/Editor/suggest';
+import { QuickCaptureModal } from './components/Inbox/QuickCapture';
 import { getParentWindow } from './dnd/util/getWindow';
 import { hasFrontmatterKey } from './helpers';
+import { isInboxEnabled } from './helpers/inbox';
 import { t } from './lang/helpers';
 import { basicFrontmatter, frontmatterKey } from './parsers/common';
 
@@ -147,6 +150,30 @@ export default class KanbanPlugin extends Plugin {
     this.addRibbonIcon(kanbanIcon, t('Create new board'), () => {
       this.newKanban();
     });
+
+    this.addRibbonIcon('lucide-inbox', t('Add to inbox'), () => {
+      this.openInboxCapture();
+    });
+  }
+
+  openInboxCapture(view?: KanbanView) {
+    const activeView = view || app.workspace.getActiveViewOfType(KanbanView);
+
+    if (!activeView) {
+      new Notice(t('Open a Kanban board first'));
+      return;
+    }
+
+    const stateManager = this.stateManagers.get(activeView.file);
+
+    if (!stateManager) return;
+
+    if (!isInboxEnabled(stateManager)) {
+      new Notice(t('Inbox is disabled in board settings.'));
+      return;
+    }
+
+    new QuickCaptureModal(activeView, stateManager).open();
   }
 
   handleShift = (e: KeyboardEvent) => {
@@ -480,6 +507,13 @@ export default class KanbanPlugin extends Plugin {
                     stateManager.archiveCompletedCards();
                   });
               })
+              .addItem((item) => {
+                item
+                  .setTitle(t('Add to inbox'))
+                  .setIcon('lucide-inbox')
+                  .setSection('pane')
+                  .onClick(() => this.openInboxCapture(kanbanView));
+              })
               .addItem((item) =>
                 item
                   .setTitle(t('View as board'))
@@ -585,6 +619,20 @@ export default class KanbanPlugin extends Plugin {
       id: 'create-new-kanban-board',
       name: t('Create new board'),
       callback: () => this.newKanban(),
+    });
+
+    this.addCommand({
+      id: 'add-to-inbox',
+      name: t('Add to inbox'),
+      hotkeys: [{ modifiers: ['Mod', 'Alt'], key: 'I' }],
+      checkCallback: (checking) => {
+        const view = app.workspace.getActiveViewOfType(KanbanView);
+
+        if (!view) return false;
+        if (checking) return true;
+
+        this.openInboxCapture(view);
+      },
     });
 
     this.addCommand({

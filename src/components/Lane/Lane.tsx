@@ -69,6 +69,15 @@ function DraggableLaneRaw({
   const showLaneColors = stateManager.useSetting('show-lane-colors');
   const laneColorBody = stateManager.useSetting('lane-color-body');
   const enableFreeLanes = stateManager.useSetting('enable-free-lanes');
+  const inboxSetting = stateManager.useSetting('inbox');
+  const inboxTitleSetting = stateManager.useSetting('inbox-title');
+  const inboxTitle =
+    typeof inboxTitleSetting === 'string' && inboxTitleSetting.trim()
+      ? inboxTitleSetting.trim()
+      : 'Inbox';
+  const isInbox =
+    inboxSetting !== false &&
+    lane.data.title.trim().toLocaleLowerCase() === inboxTitle.toLocaleLowerCase();
   const laneColor = showLaneColors !== false ? laneStylesSetting?.[laneIndex]?.color : undefined;
   const pos = enableFreeLanes ? laneStylesSetting?.[laneIndex]?.pos : undefined;
   const isFloating = !!pos;
@@ -461,6 +470,7 @@ function DraggableLaneRaw({
             'is-sorting': isSorting,
             'has-lane-color': !!laneColor,
             'kp-floating': isFloating,
+            'is-inbox': isInbox,
             'collapse-horizontal': isCollapsed && collapseDir === 'horizontal',
             'collapse-vertical': isCollapsed && collapseDir === 'vertical',
           },
@@ -477,6 +487,7 @@ function DraggableLaneRaw({
               bindHandle={isFloating ? noop : bindHandle}
               onGripPointerDown={isFloating ? startFloatingDrag : recordGripRect}
               isFloating={isFloating}
+              isInbox={isInbox}
               onMagnet={magnetBack}
               getDetachPos={getDetachPos}
               laneIndex={laneIndex}

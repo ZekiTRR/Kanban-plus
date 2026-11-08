@@ -19,6 +19,7 @@ import { c } from './components/helpers';
 import { Board } from './components/types';
 import { getParentWindow } from './dnd/util/getWindow';
 import { gotoNextDailyNote, gotoPrevDailyNote, hasFrontmatterKeyRaw } from './helpers';
+import { countInbox, getInboxTitle, isInboxEnabled } from './helpers/inbox';
 import { bindMarkdownEvents } from './helpers/renderMarkdown';
 import { PromiseQueue } from './helpers/util';
 import { t } from './lang/helpers';
@@ -347,6 +348,15 @@ export class KanbanView extends TextFileView implements HoverParent {
       })
       .addItem((item) => {
         item
+          .setTitle(t('Add to inbox'))
+          .setIcon('lucide-inbox')
+          .setSection('pane')
+          .onClick(() => {
+            this.plugin.openInboxCapture(this);
+          });
+      })
+      .addItem((item) => {
+        item
           .setTitle(t('Archive completed cards'))
           .setIcon('lucide-archive')
           .setSection('pane')
@@ -488,6 +498,33 @@ export class KanbanView extends TextFileView implements HoverParent {
     } else if (!stateManager.getSetting('show-add-list') && this.actionButtons['show-add-list']) {
       this.actionButtons['show-add-list'].remove();
       delete this.actionButtons['show-add-list'];
+    }
+
+    // Kanban Plus: inbox quick capture with a Trello-style badge.
+    if (isInboxEnabled(stateManager)) {
+      let btn = this.actionButtons['inbox'];
+
+      if (!btn) {
+        btn = this.addAction('lucide-inbox', t('Add to inbox'), () =>
+          this.plugin.openInboxCapture(this)
+        );
+        btn.addClass(c('inbox-action'));
+        btn.createSpan({ cls: c('inbox-badge') });
+        this.actionButtons['inbox'] = btn;
+      }
+
+      const badge = btn.querySelector(`.${c('inbox-badge')}`) as HTMLElement | null;
+
+      if (badge) {
+        const count = stateManager.state
+          ? countInbox(stateManager.state, getInboxTitle(stateManager))
+          : 0;
+        badge.setText(count > 99 ? '99+' : count ? String(count) : '');
+        badge.toggleClass('is-empty', count === 0);
+      }
+    } else if (this.actionButtons['inbox']) {
+      this.actionButtons['inbox'].remove();
+      delete this.actionButtons['inbox'];
     }
   };
 

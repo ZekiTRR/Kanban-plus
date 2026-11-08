@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" fill="none">
+  <defs>
+    <linearGradient id="iBg" x1="0" y1="0" x2="1200" y2="680" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1b1c20"/>
+      <stop offset="1" stop-color="#141518"/>
+    </linearGradient>
+    <filter id="iShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000" flood-opacity="0.38"/>
+    </filter>
+    <filter id="iCard" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+    <style>
+      .t { font-family: Inter, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      .title { font-size: 20px; font-weight: 700; fill: #eef1f5; }
+      .lane { font-size: 15px; font-weight: 700; fill: #eef1f5; }
+      .count { font-size: 12px; font-weight: 700; fill: #9fb6d6; }
+      .card { font-size: 13.5px; fill: #dfe3e8; }
+      .muted { font-size: 12px; fill: #98a0aa; }
+      .chip { font-size: 12px; font-weight: 600; fill: #cfe1ff; }
+      .hint { font-size: 11px; fill: #8b919a; }
+      .key { font-size: 10.5px; fill: #c9ced6; }
+      .btn { font-size: 13px; font-weight: 700; fill: #ffffff; }
+      .placeholder { font-size: 14px; fill: #6f757f; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="680" rx="14" fill="url(#iBg)"/>
+  <rect x="0.5" y="0.5" width="1199" height="679" rx="14" stroke="#2c2f36"/>
+
+  <!-- toolbar inbox button with badge -->
+  <g transform="translate(1092 28)">
+    <rect width="34" height="30" rx="7" fill="#25282e" stroke="#3a3f48"/>
+    <path d="M8 10h18l-2 9H10z" stroke="#cfe1ff" stroke-width="1.7" fill="none" stroke-linejoin="round"/>
+    <path d="M17 8v8m0 0l-3-3m3 3l3-3" stroke="#8ab4f8" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <circle cx="28" cy="6" r="8" fill="#eb5a46"/>
+    <text x="24.5" y="10" class="t" font-size="9" font-weight="700" fill="#fff">3</text>
+  </g>
+
+  <!-- Inbox lane -->
+  <g filter="url(#iShadow)">
+    <rect x="40" y="40" width="310" height="580" rx="9" fill="#23262c"/>
+  </g>
+  <rect x="40" y="40" width="310" height="46" rx="9" fill="#2c3038"/>
+  <path d="M40 77h310v9H40z" fill="#2c3038"/>
+  <rect x="40" y="77" width="310" height="3" fill="#4a6aa0"/>
+  <g transform="translate(60 51)">
+    <path d="M1 4h12l-1.4 7H2.4z" stroke="#8ab4f8" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+    <path d="M7 1v6m0 0L4.8 4.8M7 7l2.2-2.2" stroke="#8ab4f8" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  </g>
+  <text class="t lane" x="82" y="69">Входящие</text>
+  <g transform="translate(272 54)">
+    <rect width="24" height="20" rx="6" fill="#2f3b52"/>
+    <text class="t count" x="8" y="15">3</text>
+  </g>
+
+  <g filter="url(#iCard)">
+    <rect x="54" y="100" width="282" height="62" rx="7" fill="#2c3038"/>
+  </g>
+  <rect x="54" y="100" width="282" height="62" rx="7" fill="none" stroke="#3a3f48"/>
+  <text class="t card" x="72" y="126">Купить подарок</text>
+  <text class="t muted" x="72" y="146">добавлено только что</text>
+
+  <g filter="url(#iCard)">
+    <rect x="54" y="172" width="282" height="62" rx="7" fill="#2c3038"/>
+  </g>
+  <rect x="54" y="172" width="282" height="62" rx="7" fill="none" stroke="#3a3f48"/>
+  <text class="t card" x="72" y="198">Идея для статьи</text>
+  <text class="t muted" x="72" y="218">#inbox</text>
+
+  <g filter="url(#iCard)">
+    <rect x="54" y="244" width="282" height="62" rx="7" fill="#2c3038"/>
+  </g>
+  <rect x="54" y="244" width="282" height="62" rx="7" fill="none" stroke="#3a3f48"/>
+  <text class="t card" x="72" y="270">Позвонить в банк</text>
+  <text class="t muted" x="72" y="290">до пятницы</text>
+
+  <text class="t muted" x="54" y="340">⇧ перетащите карточки в нужные списки</text>
+
+  <!-- Next lane preview -->
+  <g filter="url(#iShadow)">
+    <rect x="366" y="40" width="250" height="580" rx="9" fill="#23262c"/>
+  </g>
+  <rect x="366" y="40" width="250" height="46" rx="9" fill="#0079bf"/>
+  <path d="M366 77h250v9H366z" fill="#0079bf"/>
+  <text class="t lane" x="388" y="69">В работе</text>
+  <g filter="url(#iCard)">
+    <rect x="380" y="100" width="222" height="54" rx="7" fill="#2c3038"/>
+  </g>
+  <text class="t card" x="396" y="124">Собрать макеты</text>
+
+  <!-- Quick capture modal -->
+  <g filter="url(#iShadow)">
+    <rect x="680" y="90" width="480" height="392" rx="14" fill="#22242a" stroke="#3a3f48"/>
+  </g>
+
+  <text class="t title" x="712" y="138">Добавить во входящие</text>
+
+  <g transform="translate(1000 120)">
+    <rect width="128" height="26" rx="13" fill="#2f3b52"/>
+    <text class="t chip" x="14" y="17">📥 Входящие</text>
+  </g>
+
+  <text class="t muted" x="712" y="166">Новые карточки попадут в список «Входящие».</text>
+
+  <rect x="712" y="184" width="416" height="112" rx="8" fill="#1a1c20" stroke="#3a3f48"/>
+  <text class="t placeholder" x="730" y="214">Что нужно сделать?</text>
+  <path d="M1108 210v18" stroke="#8ab4f8" stroke-width="1.6"/>
+
+  <text class="t hint" x="712" y="318">Карточка добавлена во входящие</text>
+  <text class="t hint" x="1052" y="318">Входящие: 3</text>
+
+  <g transform="translate(712 336)">
+    <rect width="416" height="1" fill="#31353d"/>
+  </g>
+
+  <g transform="translate(712 352)">
+    <text class="t hint" x="0" y="18">Enter — добавить</text>
+    <g transform="translate(120 4)">
+      <rect width="82" height="20" rx="4" fill="#2c3038" stroke="#3a3f48"/>
+      <text class="t key" x="8" y="14">Shift + Enter</text>
+    </g>
+    <text class="t hint" x="212" y="18">— новая строка</text>
+  </g>
+
+  <g transform="translate(1014 384)">
+    <rect width="114" height="40" rx="8" fill="#4a6aa0"/>
+    <text class="t btn" x="26" y="25">Добавить</text>
+  </g>
+
+  <!-- caption -->
+  <text class="t muted" x="680" y="524">Ctrl/Cmd + Alt + I, лента или кнопка на панели доски</text>
+  <text class="t muted" x="680" y="546">открывают быстрое добавление в «Входящие».</text>
+</svg>

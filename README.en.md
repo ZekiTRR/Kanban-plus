@@ -11,6 +11,7 @@ Kanban Plus is a fork of [Obsidian Kanban](https://github.com/mgmeyers/obsidian-
 - **🎨 Colored lanes & cards.** Header/body tint for lanes, strip or full background for cards, palette and custom color. Stored in the `%% kanban:settings` block.
 - **🏷 Tags & filters.** Colored tags, quick filter bar (tags, “Overdue”, “Today”, “Next 7 days”) and a tags submenu on cards.
 - **📌 Free-floating lanes.** Drag a lane out of the row and leave it anywhere on the board. The magnet button or a click on its background smoothly snaps it back.
+- **📥 Inbox, Trello-style.** A dedicated Inbox list for quick capture: toolbar button, ribbon action or `Ctrl/Cmd + Alt + I`, a card-count badge and one-click triage.
 - **🗓 Deadlines & periods.** Not just a due date, but a “from → to” range with semantic badge colors.
 - **📅 Calendar planner.** Month and week views, drag & drop cards between days, an “Unscheduled” panel, and drag-select to create a period.
 - **✅ Checklists.** A `☑ 2/5` progress counter with a bar right on the card.
@@ -40,6 +41,14 @@ Open a card’s menu and choose **“Set period”**, then pick the start and en
 The period is stored in markdown as `🛫 YYYY-MM-DD … 📅 YYYY-MM-DD`, so files stay compatible with Tasks and the original Kanban.
 
 ![Card period](docs/images/period.svg)
+
+## Inbox
+
+The **“Inbox”** button in the board toolbar (with a card-count badge), the ribbon action or `Ctrl/Cmd + Alt + I` open quick capture. `Enter` adds a card, `Shift + Enter` inserts a line; every non-empty line becomes its own card, so you can paste a whole list at once.
+
+The Inbox list is created automatically on first use and is placed first. Its menu offers “Move all cards to…” and “Hide inbox”, and any card’s menu has “Move to inbox”. Both the feature and the list name are configurable in board settings.
+
+![Inbox](docs/images/inbox.svg)
 
 ## Calendar
 

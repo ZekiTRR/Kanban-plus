@@ -22,6 +22,7 @@ interface LaneHeaderProps {
   bindHandle: (el: HTMLElement) => void;
   onGripPointerDown?: (e: PointerEvent) => void;
   isFloating?: boolean;
+  isInbox?: boolean;
   onMagnet?: () => void;
   getDetachPos?: () => { x: number; y: number } | null;
   setIsItemInputVisible?: Dispatch<StateUpdater<EditState>>;
@@ -103,6 +104,7 @@ export const LaneHeader = memo(function LaneHeader({
   bindHandle,
   onGripPointerDown,
   isFloating,
+  isInbox,
   onMagnet,
   getDetachPos,
   setIsItemInputVisible,
@@ -112,7 +114,7 @@ export const LaneHeader = memo(function LaneHeader({
   const [editState, setEditState] = useState<EditState>(EditingState.cancel);
   const lanePath = useNestedEntityPath(laneIndex);
 
-  const { boardModifiers } = useContext(KanbanContext);
+  const { boardModifiers, stateManager } = useContext(KanbanContext);
   const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
     setEditState,
     path: lanePath,
@@ -140,8 +142,18 @@ export const LaneHeader = memo(function LaneHeader({
           },
         })
       );
+
+      // Keep the inbox setting in sync when its list is renamed, so the lane
+      // keeps behaving as the inbox.
+      if (isInbox && title.trim() && title !== lane.data.title) {
+        stateManager.setState((board) =>
+          update(board, {
+            data: { settings: { 'inbox-title': { $set: title.trim() } } },
+          })
+        );
+      }
     },
-    [boardModifiers, lane, lanePath]
+    [boardModifiers, lane, lanePath, isInbox, stateManager]
   );
 
   const onDoubleClick = useCallback(
@@ -170,6 +182,12 @@ export const LaneHeader = memo(function LaneHeader({
         <div onClick={toggleIsCollapsed} className={c('lane-collapse')}>
           <Icon name="chevron-down" />
         </div>
+
+        {isInbox && (
+          <span className={c('lane-inbox-icon')} aria-label={t('Inbox')}>
+            <Icon name="lucide-inbox" />
+          </span>
+        )}
 
         <LaneTitle
           id={lane.id}

@@ -1,13 +1,20 @@
 import update from 'immutability-helper';
 import { Menu, Platform, TFile, TFolder } from 'obsidian';
-import { Dispatch, StateUpdater, useCallback } from 'preact/hooks';
+import { Dispatch, StateUpdater, useCallback, useContext } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { moveEntity } from 'src/dnd/util/data';
+import {
+  ensureInboxLaneIndex,
+  getInboxLaneIndex,
+  getInboxTitle,
+  isInboxEnabled,
+} from 'src/helpers/inbox';
 import { t } from 'src/lang/helpers';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { addColorMenu, setItemColor } from '../colors';
+import { KanbanContext } from '../context';
 import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
 import { EditState, Item } from '../types';
 import { openPeriodEditor } from './PeriodModal';
@@ -43,6 +50,8 @@ export function useItemMenu({
   boardModifiers,
   stateManager,
 }: UseItemMenuParams) {
+  const { view } = useContext(KanbanContext);
+
   return useCallback(
     (e: MouseEvent) => {
       const coordinates = { x: e.clientX, y: e.clientY };
@@ -408,8 +417,39 @@ export function useItemMenu({
         });
       }
 
+      // Kanban Plus: send a card to the inbox for later triage.
+      if (isInboxEnabled(stateManager)) {
+        const inboxTitle = getInboxTitle(stateManager);
+        const currentInboxIndex = getInboxLaneIndex(stateManager.state, inboxTitle);
+
+        if (path[0] !== currentInboxIndex) {
+          menu.addItem((item) => {
+            item
+              .setIcon('lucide-inbox')
+              .setTitle(t('Move to inbox'))
+              .onClick(() => {
+                const index = getInboxLaneIndex(stateManager.state, inboxTitle);
+
+                if (index === -1) {
+                  const createdIndex = ensureInboxLaneIndex(stateManager, view);
+                  // Inserting the inbox lane shifts every existing lane index.
+                  const adjustedPath: Path = [
+                    path[0] + (createdIndex <= path[0] ? 1 : 0),
+                    path[1],
+                  ];
+
+                  boardModifiers.moveItemToLane(adjustedPath, createdIndex);
+                  return;
+                }
+
+                boardModifiers.moveItemToLane(path, index);
+              });
+          });
+        }
+      }
+
       menu.showAtPosition(coordinates);
     },
-    [setEditState, item, path, boardModifiers, stateManager]
+    [setEditState, item, path, boardModifiers, stateManager, view]
   );
 }

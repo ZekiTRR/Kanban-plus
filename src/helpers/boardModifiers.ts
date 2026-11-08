@@ -36,6 +36,8 @@ export interface BoardModifiers {
   updateLane: (path: Path, lane: Lane) => void;
   archiveLane: (path: Path) => void;
   archiveLaneItems: (path: Path) => void;
+  moveLaneItemsTo: (path: Path, laneIndex: number) => void;
+  moveItemToLane: (path: Path, laneIndex: number) => void;
   deleteEntity: (path: Path) => void;
   updateItem: (path: Path, item: Item) => void;
   archiveItem: (path: Path) => void;
@@ -98,6 +100,41 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
 
     moveItemToTop: (path: Path) => {
       stateManager.setState((boardData) => moveEntity(boardData, path, [path[0], 0]));
+    },
+
+    moveItemToLane: (path: Path, laneIndex: number) => {
+      stateManager.setState((boardData) => {
+        const target = boardData.children[laneIndex];
+        if (!target) return boardData;
+
+        return moveEntity(boardData, path, [laneIndex, target.children.length]);
+      });
+    },
+
+    moveLaneItemsTo: (path: Path, laneIndex: number) => {
+      stateManager.setState((boardData) => {
+        const sourceIndex = path.last();
+
+        if (sourceIndex === laneIndex) return boardData;
+
+        const source = boardData.children[sourceIndex];
+        const target = boardData.children[laneIndex];
+
+        if (!source || !target || !source.children.length) return boardData;
+
+        const items = source.children;
+        const cleared = update(boardData, {
+          children: {
+            [sourceIndex]: { children: { $set: [] } },
+          },
+        });
+
+        return update(cleared, {
+          children: {
+            [laneIndex]: { children: { $push: items } },
+          },
+        });
+      });
     },
 
     moveItemToBottom: (path: Path) => {

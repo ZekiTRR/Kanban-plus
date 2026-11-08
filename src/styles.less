@@ -2307,6 +2307,154 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   }
 }
 
+/* Kanban Plus: inbox ------------------------------------------------------ */
+
+.kanban-plugin__lane-wrapper.is-inbox {
+  .kanban-plugin__lane {
+    border-color: hsla(var(--interactive-accent-hsl), 0.45);
+  }
+
+  .kanban-plugin__lane-header-wrapper {
+    box-shadow: inset 0 2px 0 var(--interactive-accent);
+  }
+}
+
+.kanban-plugin__lane-inbox-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--interactive-accent);
+
+  svg {
+    width: 1em;
+    height: 1em;
+  }
+}
+
+.kanban-plugin__inbox-action {
+  position: relative;
+}
+
+.kanban-plugin__inbox-badge {
+  position: absolute;
+  inset-block-start: -3px;
+  inset-inline-end: -5px;
+  min-width: 15px;
+  height: 15px;
+  padding-inline: 3px;
+  border-radius: 8px;
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 15px;
+  text-align: center;
+  pointer-events: none;
+
+  &.is-empty {
+    display: none;
+  }
+}
+
+/* Kanban Plus: quick capture modal --------------------------------------- */
+
+.modal.kanban-plugin__quick-capture-modal {
+  width: 480px;
+  max-width: 90vw;
+}
+
+.kanban-plugin__quick-capture {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kanban-plugin__quick-capture-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.kanban-plugin__quick-capture-title {
+  margin: 0;
+  font-size: var(--font-ui-large);
+}
+
+.kanban-plugin__quick-capture-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background-color: hsla(var(--interactive-accent-hsl), 0.14);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  white-space: nowrap;
+}
+
+.kanban-plugin__quick-capture-target-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.kanban-plugin__quick-capture-desc {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.kanban-plugin__quick-capture-input {
+  width: 100%;
+  min-height: 84px;
+  padding: 10px;
+  border-radius: var(--radius-m, 8px);
+  font-size: var(--font-ui-medium);
+  resize: vertical;
+}
+
+.kanban-plugin__quick-capture-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 1.2em;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.kanban-plugin__quick-capture-status {
+  color: var(--color-green, #61bd4f);
+
+  &.is-error {
+    color: var(--text-error);
+  }
+}
+
+.kanban-plugin__quick-capture-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-block-start: 4px;
+}
+
+.kanban-plugin__quick-capture-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-end: auto;
+  color: var(--text-faint);
+  font-size: var(--font-ui-smallest);
+}
+
+.kanban-plugin__quick-capture-hint-key {
+  padding-inline: 4px;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-secondary);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smallest);
+}
+
 /* Kanban Plus: calendar view ---------------------------------------------- */
 
 .kanban-plugin__calendar {

@@ -66,6 +66,8 @@ export interface KanbanSettings {
   'enable-animations'?: boolean;
   'enable-free-lanes'?: boolean;
   'enable-zoom'?: boolean;
+  'inbox'?: boolean;
+  'inbox-title'?: string;
   'full-list-lane-width'?: boolean;
   'hide-card-count'?: boolean;
   'inline-metadata-position'?: 'body' | 'footer' | 'metadata-table';
@@ -126,6 +128,8 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'enable-animations',
   'enable-free-lanes',
   'enable-zoom',
+  'inbox',
+  'inbox-title',
   'full-list-lane-width',
   'hide-card-count',
   'inline-metadata-position',
@@ -1690,6 +1694,35 @@ export class SettingsManager {
       ),
       true
     );
+
+    toggleSetting(
+      'inbox',
+      t('Enable Inbox'),
+      t('Adds a dedicated Inbox list and a quick-capture dialog for new cards.'),
+      true
+    );
+
+    new Setting(contentEl)
+      .setName(t('Inbox list name'))
+      .setDesc(t('Name of the list used as Inbox.'))
+      .addText((text) => {
+        const [value, globalValue] = this.getSetting('inbox-title', local);
+
+        text.setPlaceholder((globalValue as string) || 'Inbox');
+        text.setValue((value as string) || '');
+
+        text.onChange((newValue) => {
+          if (newValue.trim()) {
+            this.applySettingsUpdate({
+              'inbox-title': { $set: newValue.trim() },
+            });
+          } else {
+            this.applySettingsUpdate({
+              $unset: ['inbox-title'],
+            });
+          }
+        });
+      });
   }
 
   cleanUp() {

@@ -336,6 +336,22 @@ const en = {
   'Click to edit the period': 'Click to edit the period',
   Period: 'Period',
   'Drop a card here to set it as the period': 'Drop a card here to set it as the period',
+  'Add to inbox': 'Add to inbox',
+  'New cards will land in the inbox list.': 'New cards will land in the inbox list.',
+  'Card added to inbox': 'Card added to inbox',
+  'Cards added': 'Cards added',
+  'New line': 'New line',
+  'Open a Kanban board first': 'Open a Kanban board first',
+  'Inbox is disabled in board settings.': 'Inbox is disabled in board settings.',
+  'Move to inbox': 'Move to inbox',
+  'Move all cards to': 'Move all cards to',
+  'Hide inbox': 'Hide inbox',
+  'Enable Inbox': 'Enable Inbox',
+  'Adds a dedicated Inbox list and a quick-capture dialog for new cards.':
+    'Adds a dedicated Inbox list and a quick-capture dialog for new cards.',
+  'Inbox list name': 'Inbox list name',
+  'Name of the list used as Inbox.': 'Name of the list used as Inbox.',
+  Inbox: 'Inbox',
 };
 
 export type Lang = typeof en;
