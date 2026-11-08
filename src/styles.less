@@ -3366,27 +3366,33 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   padding: 6px 0;
 }
 
-.kanban-plugin__card-detail-md-split {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 10px;
-  align-items: stretch;
-}
+.kanban-plugin__card-detail-md-editor {
+  border: 1px solid var(--kp-line);
+  border-radius: var(--kp-radius);
+  background-color: var(--kp-raised);
+  overflow: hidden;
+  margin-block-end: 4px;
 
-@media (max-width: 720px) {
-  .kanban-plugin__card-detail-md-split {
-    grid-template-columns: minmax(0, 1fr);
+  .cm-editor {
+    border: none;
+  }
+
+  .kanban-plugin__item-submit-button {
+    display: none;
+  }
+
+  .cm-content {
+    min-height: 110px;
+    padding: 10px 12px;
+    font-size: 14px;
+    line-height: 1.6;
   }
 }
 
-.kanban-plugin__card-detail-md-split .kanban-plugin__card-detail-description {
-  min-height: 140px;
-  height: 100%;
-}
-
-.kanban-plugin__card-detail-md-split .kanban-plugin__card-detail-md-preview {
-  min-height: 140px;
-  margin-bottom: 0;
+.kanban-plugin__card-detail-activity .kanban-plugin__card-detail-md-editor {
+  .cm-content {
+    min-height: 72px;
+  }
 }
 
 .kanban-plugin__card-detail-md-preview {

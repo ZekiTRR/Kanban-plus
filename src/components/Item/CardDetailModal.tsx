@@ -1,10 +1,12 @@
 import update from 'immutability-helper';
+import { ViewUpdate } from '@codemirror/view';
 import {
   Component,
   MarkdownRenderer as ObsidianMarkdownRenderer,
   Modal,
   setIcon,
 } from 'obsidian';
+import { render, unmountComponentAtNode } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
 import { getBoardModifiers } from 'src/helpers/boardModifiers';
 import {
@@ -21,6 +23,8 @@ import { t } from 'src/lang/helpers';
 
 import { KanbanView } from '../../KanbanView';
 import { colorPalette, getReadableTextColor, setTagColor } from '../colors';
+import { KanbanContext } from '../context';
+import { MarkdownEditor } from '../Editor/MarkdownEditor';
 import { CoverModal } from '../Appearance/CoverModal';
 import { coverCss, getCardCoverFor, setCardCoverFor } from '../cover';
 import {
@@ -30,7 +34,7 @@ import {
 } from '../timeline/dependencies';
 import { constructDatePicker, constructMenuDatePickerOnChange } from '../Item/helpers';
 import { c, escapeRegExpStr } from '../helpers';
-import { Item } from '../types';
+import { EditingState, Item } from '../types';
 
 function getTitleMarkdown(firstLine: string): string {
   return (firstLine || '')
@@ -50,6 +54,7 @@ export class CardDetailModal extends Modal {
   private blockId: string;
   private labelsOpen = false;
   private mdComponent: Component | null = null;
+  private mdEditorHosts: HTMLElement[] = [];
 
   constructor(view: KanbanView, stateManager: StateManager, item: Item) {
     super(stateManager.app);
@@ -113,6 +118,59 @@ export class CardDetailModal extends Modal {
     }
   }
 
+  private clearMdEditors() {
+    this.mdEditorHosts.forEach((host) => {
+      try {
+        unmountComponentAtNode(host);
+      } catch {
+        /* already unmounted */
+      }
+      host.empty();
+    });
+    this.mdEditorHosts = [];
+  }
+
+  /**
+   * Mounts the same CM6 MarkdownEditor used for board cards — one single
+   * surface where Markdown is written and rendered live, like a note.
+   */
+  private mountMarkdownEditor(
+    container: HTMLElement,
+    options: {
+      value: string;
+      placeholder?: string;
+      className: string;
+      onChange: (value: string) => void;
+    }
+  ) {
+    const context = {
+      view: this.view,
+      stateManager: this.stateManager,
+      boardModifiers: this.boardModifiers,
+      filePath: this.stateManager.file.path,
+    };
+
+    render(
+      <KanbanContext.Provider value={context}>
+        <MarkdownEditor
+          editState={EditingState.cancel}
+          className={options.className}
+          value={options.value}
+          placeholder={options.placeholder}
+          onEnter={() => false}
+          onEscape={() => {}}
+          onSubmit={() => {}}
+          onChange={(update: ViewUpdate) => {
+            if (update.docChanged) options.onChange(update.state.doc.toString());
+          }}
+        />
+      </KanbanContext.Provider>,
+      container
+    );
+
+    this.mdEditorHosts.push(container);
+  }
+
   onOpen() {
     this.modalEl.addClass(c('card-detail-modal'));
     this.mdComponent = new Component();
@@ -122,6 +180,7 @@ export class CardDetailModal extends Modal {
 
   private render() {
     const { contentEl } = this;
+    this.clearMdEditors();
     const current = this.getCurrent();
 
     contentEl.empty();
@@ -399,30 +458,23 @@ export class CardDetailModal extends Modal {
     setIcon(icon, 'lucide-align-left');
     titleWrap.createEl('h3', { text: t('Description') });
 
-    const split = section.createDiv(c('card-detail-md-split'));
-
-    const textarea = split.createEl('textarea', { cls: c('card-detail-description') });
-    textarea.value = description;
-    textarea.placeholder = t('Add a more detailed description...');
-    textarea.rows = 6;
-
-    const previewEl = split.createDiv(c('card-detail-md-preview'));
-    const updatePreview = () => this.renderMarkdownInto(previewEl, textarea.value);
-    updatePreview();
-
-    let previewTimer = 0;
-    textarea.addEventListener('input', () => {
-      this.view.getWindow().clearTimeout(previewTimer);
-      previewTimer = this.view.getWindow().setTimeout(updatePreview, 200);
+    let draft = description;
+    const editorHost = section.createDiv(c('card-detail-md-editor'));
+    this.mountMarkdownEditor(editorHost, {
+      value: description,
+      placeholder: t('Add a more detailed description...'),
+      className: c('card-detail-md-editor-inner'),
+      onChange: (value) => {
+        draft = value;
+      },
     });
 
     const actions = section.createDiv(c('card-detail-actions'));
     const save = actions.createEl('button', { text: t('Save') });
 
     save.addEventListener('click', () => {
-      this.view.getWindow().clearTimeout(previewTimer);
       const parts = parseCardParts(item.data.titleRaw);
-      parts.description = textarea.value;
+      parts.description = draft;
       this.writeParts(item, path, parts);
       this.logEvent(`✎ ${t('Description')}`);
       this.render();
@@ -579,25 +631,21 @@ export class CardDetailModal extends Modal {
     setIcon(icon, 'lucide-message-square');
     titleWrap.createEl('h3', { text: t('Comments & events') });
 
-    const input = section.createEl('textarea', {
-      cls: c('card-detail-comment-input'),
-      attr: { placeholder: t('Write a comment...'), rows: '2' },
-    });
-
-    const previewEl = section.createDiv(c('card-detail-md-preview'));
-    const updatePreview = () => this.renderMarkdownInto(previewEl, input.value);
-    updatePreview();
-
-    let previewTimer = 0;
-    input.addEventListener('input', () => {
-      this.view.getWindow().clearTimeout(previewTimer);
-      previewTimer = this.view.getWindow().setTimeout(updatePreview, 200);
+    let draft = '';
+    const editorHost = section.createDiv(c('card-detail-md-editor'));
+    this.mountMarkdownEditor(editorHost, {
+      value: '',
+      placeholder: t('Write a comment...'),
+      className: c('card-detail-md-editor-inner'),
+      onChange: (value) => {
+        draft = value;
+      },
     });
 
     const addBtn = section.createEl('button', { text: t('Comment') });
     addBtn.addClass('mod-cta');
     addBtn.addEventListener('click', () => {
-      const value = input.value.trim();
+      const value = draft.trim();
       if (!value) return;
 
       const fresh = getCardMeta(this.stateManager, this.blockId);
@@ -648,6 +696,7 @@ export class CardDetailModal extends Modal {
   }
 
   onClose() {
+    this.clearMdEditors();
     this.contentEl.empty();
     this.mdComponent?.unload();
     this.mdComponent = null;
