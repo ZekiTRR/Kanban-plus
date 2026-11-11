@@ -310,12 +310,6 @@ export class CardDetailModal extends Modal {
     this.boardModifiers.updateItem(path, this.stateManager.updateItemContent(item, raw));
   }
 
-  private logEvent(text: string) {
-    const meta = getCardMeta(this.stateManager, this.blockId);
-    meta.events.push({ ts: Date.now(), text });
-    saveCardMeta(this.stateManager, this.blockId, meta);
-  }
-
   private toggleItemTag(item: Item, path: number[], tag: string) {
     const itemTags = item.data.metadata.tags || [];
     const assigned = itemTags.includes(tag);
@@ -328,7 +322,6 @@ export class CardDetailModal extends Modal {
       titleRaw = `${item.data.titleRaw} ${tag}`;
     }
 
-    this.logEvent(`${assigned ? '−' : '+'} ${tag}`);
     this.boardModifiers.updateItem(path, this.stateManager.updateItemContent(item, titleRaw));
     this.render();
   }
@@ -476,7 +469,6 @@ export class CardDetailModal extends Modal {
       const parts = parseCardParts(item.data.titleRaw);
       parts.description = draft;
       this.writeParts(item, path, parts);
-      this.logEvent(`✎ ${t('Description')}`);
       this.render();
     });
   }
@@ -514,7 +506,6 @@ export class CardDetailModal extends Modal {
         const parts = parseCardParts(item.data.titleRaw);
         parts.checklist[index].checked = checkbox.checked;
         this.writeParts(item, path, parts);
-        this.logEvent(`${checkbox.checked ? '☑' : '☐'} ${entry.text}`);
         this.render();
       });
 
@@ -590,7 +581,6 @@ export class CardDetailModal extends Modal {
         const parts = parseCardParts(item.data.titleRaw);
         parts.checklist.splice(index, 1);
         this.writeParts(item, path, parts);
-        this.logEvent(`− ${entry.text}`);
         this.render();
       });
     });
@@ -610,7 +600,6 @@ export class CardDetailModal extends Modal {
       const parts = parseCardParts(item.data.titleRaw);
       parts.checklist.push({ text: value, checkChar: ' ', checked: false, indent: '' });
       this.writeParts(item, path, parts);
-      this.logEvent(`+ ${value}`);
       this.render();
     };
 
@@ -629,7 +618,7 @@ export class CardDetailModal extends Modal {
     const titleWrap = head.createDiv(c('card-detail-section-title'));
     const icon = titleWrap.createSpan(c('card-detail-section-icon'));
     setIcon(icon, 'lucide-message-square');
-    titleWrap.createEl('h3', { text: t('Comments & events') });
+    titleWrap.createEl('h3', { text: t('Comments') });
 
     let draft = '';
     const editorHost = section.createDiv(c('card-detail-md-editor'));
@@ -655,41 +644,24 @@ export class CardDetailModal extends Modal {
     });
 
     const list = section.createDiv(c('card-detail-feed'));
-    const entries: Array<{ ts: number; text: string; kind: 'comment' | 'event' }> = [
-      ...meta.comments.map((entry) => ({
-        ts: entry.ts,
-        text: entry.text,
-        kind: 'comment' as const,
-      })),
-      ...meta.events.map((entry) => ({
-        ts: entry.ts,
-        text: entry.text,
-        kind: 'event' as const,
-      })),
-    ].sort((a, b) => b.ts - a.ts);
+    const entries = [...meta.comments].sort((a, b) => b.ts - a.ts);
 
     if (!entries.length) {
-      list.createEl('p', { text: t('No comments or events yet.'), cls: c('card-detail-empty') });
+      list.createEl('p', { text: t('No comments yet.'), cls: c('card-detail-empty') });
     }
 
     entries.forEach((entry) => {
-      const row = list.createDiv(
-        `${c('card-detail-feed-entry')} ${entry.kind === 'comment' ? 'is-comment' : 'is-event'}`
-      );
+      const row = list.createDiv(`${c('card-detail-feed-entry')} is-comment`);
       const avatar = row.createDiv(c('card-detail-avatar'));
-      avatar.setText(entry.kind === 'comment' ? t('You').slice(0, 1) : '•');
+      avatar.setText((entry.author || t('You')).slice(0, 1));
       const body = row.createDiv(c('card-detail-feed-body'));
       body.createDiv({
-        text: entry.kind === 'comment' ? t('You') : t('Activity'),
+        text: entry.author || t('You'),
         cls: c('card-detail-feed-author'),
       });
 
-      if (entry.kind === 'comment') {
-        const rendered = body.createDiv(c('card-detail-feed-text'));
-        this.renderMarkdownInto(rendered, entry.text);
-      } else {
-        body.createDiv({ text: entry.text, cls: c('card-detail-feed-text') });
-      }
+      const rendered = body.createDiv(c('card-detail-feed-text'));
+      this.renderMarkdownInto(rendered, entry.text);
 
       body.createDiv({ text: formatCardTime(entry.ts), cls: c('card-detail-feed-time') });
     });

@@ -331,6 +331,8 @@ const lang: Partial<Lang> = {
   Add: 'Добавить',
   'Add a checklist item...': 'Добавить пункт чек-листа...',
   'Comments & events': 'Комментарии и события',
+  Comments: 'Комментарии',
+  'No comments yet.': 'Пока нет комментариев.',
   'Write a comment...': 'Напишите комментарий...',
   'No comments or events yet.': 'Пока нет комментариев и событий.',
   You: 'Вы',

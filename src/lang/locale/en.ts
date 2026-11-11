@@ -386,6 +386,8 @@ const en = {
   Add: 'Add',
   'Add a checklist item...': 'Add a checklist item...',
   'Comments & events': 'Comments & events',
+  Comments: 'Comments',
+  'No comments yet.': 'No comments yet.',
   'Write a comment...': 'Write a comment...',
   'No comments or events yet.': 'No comments or events yet.',
   You: 'You',
