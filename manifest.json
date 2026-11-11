@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-kanban-plus",
 	"name": "Kanban Plus",
-	"version": "2.4.0",
+	"version": "2.5.0",
 	"minAppVersion": "1.0.0",
 	"description": "Markdown-backed Kanban boards in Obsidian, supercharged: colored lanes & cards, deadlines & periods, checklists, free-floating lanes, zoom, animations, a calendar planner, Timeline/Gantt view, Swimlanes, Mini Map, card covers and WIP limits. Fork of obsidian-kanban.",
 	"author": "Yoko",
