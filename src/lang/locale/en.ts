@@ -388,6 +388,8 @@ const en = {
   'Comments & events': 'Comments & events',
   Comments: 'Comments',
   'No comments yet.': 'No comments yet.',
+  'Delete comment': 'Delete comment',
+  Saved: 'Saved',
   'Write a comment...': 'Write a comment...',
   'No comments or events yet.': 'No comments or events yet.',
   You: 'You',

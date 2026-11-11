@@ -3435,6 +3435,25 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   }
 }
 
+.kanban-plugin__card-detail-md-footer {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 14px;
+  margin-block: -2px 2px;
+}
+
+.kanban-plugin__card-detail-autosave {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--kp-subtle);
+  opacity: 0;
+  transition: opacity 160ms ease;
+
+  &.is-visible {
+    opacity: 1;
+  }
+}
+
 /* Shared, consistent text fields inside the card window */
 .kanban-plugin__card-detail-add-input,
 .kanban-plugin__card-detail-label-search {
@@ -4566,6 +4585,52 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
 
 .kanban-plugin__card-detail-feed-entry {
   gap: 10px;
+  position: relative;
+}
+
+.kanban-plugin__card-detail-feed-actions {
+  flex-shrink: 0;
+  align-self: flex-start;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.kanban-plugin__card-detail-feed-entry:hover .kanban-plugin__card-detail-feed-actions,
+.kanban-plugin__card-detail-feed-actions:focus-within {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .kanban-plugin__card-detail-feed-actions {
+    opacity: 1;
+  }
+}
+
+.kanban-plugin__card-detail-feed-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--kp-subtle);
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
+
+  &:hover {
+    color: var(--color-red, #e5534b);
+    background-color: var(--background-modifier-hover);
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 }
 
 .kanban-plugin__card-detail-avatar {
@@ -4587,6 +4652,10 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   font-size: 12px;
   font-weight: 700;
   color: var(--kp-ink);
+}
+
+.kanban-plugin__card-detail-feed-body {
+  flex-grow: 1;
 }
 
 .kanban-plugin__card-detail-feed-text {

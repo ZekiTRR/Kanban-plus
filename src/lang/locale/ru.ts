@@ -333,6 +333,8 @@ const lang: Partial<Lang> = {
   'Comments & events': 'Комментарии и события',
   Comments: 'Комментарии',
   'No comments yet.': 'Пока нет комментариев.',
+  'Delete comment': 'Удалить комментарий',
+  Saved: 'Сохранено',
   'Write a comment...': 'Напишите комментарий...',
   'No comments or events yet.': 'Пока нет комментариев и событий.',
   You: 'Вы',

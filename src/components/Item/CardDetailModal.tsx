@@ -55,6 +55,7 @@ export class CardDetailModal extends Modal {
   private labelsOpen = false;
   private mdComponent: Component | null = null;
   private mdEditorHosts: HTMLElement[] = [];
+  private pendingDescriptionSave: (() => void) | null = null;
 
   constructor(view: KanbanView, stateManager: StateManager, item: Item) {
     super(stateManager.app);
@@ -130,6 +131,13 @@ export class CardDetailModal extends Modal {
     this.mdEditorHosts = [];
   }
 
+  /** Writes a pending debounced description edit (used on re-render and close). */
+  private flushDescriptionSave() {
+    const save = this.pendingDescriptionSave;
+    this.pendingDescriptionSave = null;
+    save?.();
+  }
+
   /**
    * Mounts the same CM6 MarkdownEditor used for board cards — one single
    * surface where Markdown is written and rendered live, like a note.
@@ -180,6 +188,7 @@ export class CardDetailModal extends Modal {
 
   private render() {
     const { contentEl } = this;
+    this.flushDescriptionSave();
     this.clearMdEditors();
     const current = this.getCurrent();
 
@@ -451,7 +460,13 @@ export class CardDetailModal extends Modal {
     setIcon(icon, 'lucide-align-left');
     titleWrap.createEl('h3', { text: t('Description') });
 
+    const win = this.view.getWindow();
     let draft = description;
+    let saved = description;
+    let timer = 0;
+    let persist: () => void = () => {};
+    let status: HTMLElement | null = null;
+
     const editorHost = section.createDiv(c('card-detail-md-editor'));
     this.mountMarkdownEditor(editorHost, {
       value: description,
@@ -459,18 +474,34 @@ export class CardDetailModal extends Modal {
       className: c('card-detail-md-editor-inner'),
       onChange: (value) => {
         draft = value;
+        win.clearTimeout(timer);
+        timer = win.setTimeout(() => persist(), 600);
       },
     });
 
-    const actions = section.createDiv(c('card-detail-actions'));
-    const save = actions.createEl('button', { text: t('Save') });
+    const footer = section.createDiv(c('card-detail-md-footer'));
+    status = footer.createSpan({ cls: c('card-detail-autosave') });
 
-    save.addEventListener('click', () => {
-      const parts = parseCardParts(item.data.titleRaw);
+    persist = () => {
+      win.clearTimeout(timer);
+      if (draft === saved) return;
+
+      const current = this.getCurrent();
+      if (!current) return;
+
+      const parts = parseCardParts(current.item.data.titleRaw);
       parts.description = draft;
-      this.writeParts(item, path, parts);
-      this.render();
-    });
+      this.writeParts(current.item, current.path, parts);
+      saved = draft;
+
+      if (status) {
+        status.setText(t('Saved'));
+        status.addClass('is-visible');
+        win.setTimeout(() => status?.removeClass('is-visible'), 1400);
+      }
+    };
+
+    this.pendingDescriptionSave = persist;
   }
 
   private renderChecklist(
@@ -664,10 +695,24 @@ export class CardDetailModal extends Modal {
       this.renderMarkdownInto(rendered, entry.text);
 
       body.createDiv({ text: formatCardTime(entry.ts), cls: c('card-detail-feed-time') });
+
+      const actions = row.createDiv(c('card-detail-feed-actions'));
+      const deleteBtn = actions.createEl('button', {
+        cls: c('card-detail-feed-delete'),
+        attr: { 'aria-label': t('Delete comment'), title: t('Delete comment') },
+      });
+      setIcon(deleteBtn, 'lucide-trash-2');
+      deleteBtn.addEventListener('click', () => {
+        const fresh = getCardMeta(this.stateManager, this.blockId);
+        fresh.comments = fresh.comments.filter((comment) => comment.ts !== entry.ts);
+        saveCardMeta(this.stateManager, this.blockId, fresh);
+        this.render();
+      });
     });
   }
 
   onClose() {
+    this.flushDescriptionSave();
     this.clearMdEditors();
     this.contentEl.empty();
     this.mdComponent?.unload();
